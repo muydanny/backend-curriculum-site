@@ -73,7 +73,7 @@ And now with our migrations run, let us add the relationships to our models.
 
 ```ruby
 has_many :store_books
-has many :stores, through: :store_books
+has_many :stores, through: :store_books
 ```
 
 *app/models/store.rb*
