@@ -29,8 +29,8 @@ title: Advanced CSS Selectors
   - `focus`
   - `nth-of-type`
   
-  Pseudo-class [documentaion](https://www.w3schools.com/css/css_pseudo_classes.asp)
-  Pseudo-element [documentaion](https://www.w3schools.com/css/css_pseudo_elements.asp)
+  Pseudo-class [documentation](https://www.w3schools.com/css/css_pseudo_classes.asp)
+  Pseudo-element [documentation](https://www.w3schools.com/css/css_pseudo_elements.asp)
 
 ### Let's jump back into our playground to explore
 

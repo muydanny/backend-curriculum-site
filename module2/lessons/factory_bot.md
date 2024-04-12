@@ -149,7 +149,7 @@ In this case, this WON'T work for us, because Songs require that we have an arti
 
 **Relationships**  
 
-Want to create an object but it has a belongs_to and needs an associated object to be created? Now we have a artist or two created and two songs. We have more tools to DRY this up even more. If we create our song prepopulated with a artist, we don't need to create artists in our song index test.
+Want to create an object but it has a belongs_to and needs an associated object to be created? Now we have a artist or two created and two songs. We have more tools to DRY this up even more. If we create our song pre-populated with a artist, we don't need to create artists in our song index test.
 
 ```ruby
 #spec/factories/song.rb

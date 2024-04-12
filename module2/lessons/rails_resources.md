@@ -101,7 +101,7 @@ end
 
 Just like before, we only want to create the routes we need.
 
-With a partner, refactor the nested routes in SetList to use the `resources` sytnax.
+With a partner, refactor the nested routes in SetList to use the `resources` syntax.
 
 ## What's the difference between Nested Resources and Namespacing?
 

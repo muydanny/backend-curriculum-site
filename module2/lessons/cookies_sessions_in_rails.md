@@ -55,7 +55,7 @@ Use EditThisCookie to change the value in the cookie to `“It’s a secret to n
 
 ## Sessions
 
-As you learned during your exploration, sessions can be stored either on the server or client side.  Rails will default to storing session information on the client side, similar to cookies.  Think about what we know about cookies - what are some advantages and disadvanteges to client-side storage?
+As you learned during your exploration, sessions can be stored either on the server or client side.  Rails will default to storing session information on the client side, similar to cookies.  Think about what we know about cookies - what are some advantages and disadvantages to client-side storage?
 
 One major advantage of client-side session storage is speed.  Rather than having to make database calls to get session information for a particular user, storing that information on the cookie means it is much quicker to access.
 
@@ -74,7 +74,7 @@ def show
 end
 ```
 
-Reload your artist show page again, and use EditThisCookie to see what cookies you have now. What is different about the sesssion? Can you change it?
+Reload your artist show page again, and use EditThisCookie to see what cookies you have now. What is different about the session? Can you change it?
 
 Update the show method in your ArtistsController one more time:
 

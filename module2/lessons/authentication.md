@@ -535,7 +535,7 @@ class SessionsController < ApplicationController
 end
 ```
 
-Next we expect a no template errror:
+Next we expect a no template error:
 
 ```bash
  Failure/Error: click_on "I already have an account"
@@ -694,14 +694,14 @@ In the `SessionsController#create` action, we need to check the password and han
 
 ```ruby
 user = User.find_by(username: params[:username])
-if user.passsword == params[:password]
+if user.password == params[:password]
   # password matches
 else
   #password doesn't match
 end
 ```
 
-What we're actuallly storing in the database is a **hash** or **digest** of the user's password, so we are going need to hash the given password and see if it matches what's in our database. Luckily, that `has_secure_password` line we added to our User model gives us a handy method to do this for us called `authenticate`. This method is called on a User object and takes a password as an argument:
+What we're actually storing in the database is a **hash** or **digest** of the user's password, so we are going need to hash the given password and see if it matches what's in our database. Luckily, that `has_secure_password` line we added to our User model gives us a handy method to do this for us called `authenticate`. This method is called on a User object and takes a password as an argument:
 
 ```ruby
 def create

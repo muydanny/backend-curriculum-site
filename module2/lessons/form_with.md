@@ -56,7 +56,7 @@ If we were going to use `form_with` to create a Dog object with name, breed, a
 
 Notice the **`data: {turbo: false}`** option. **You must include this option for your form to work properly with the `form_with` helper!**
 
-As of Rails 7, Rails uses Turbo as a form optimization tool. Turbo has many benefits, but it also introduces some quirks that are tricky to troubleshoot, especially when you're just starting to learn about forms. For simplicity, we are going to disabe Turbo whenever making a form in order to avoid these pesky issues. 
+As of Rails 7, Rails uses Turbo as a form optimization tool. Turbo has many benefits, but it also introduces some quirks that are tricky to troubleshoot, especially when you're just starting to learn about forms. For simplicity, we are going to disable Turbo whenever making a form in order to avoid these pesky issues. 
 
 In the above example, we are binding our form to a new Dog object `Dog.new`. While this works from a functionality standpoint, we don't ever want to be reaching from our views into our database, so, we would want our controller to send this object to our views:
 
@@ -144,7 +144,7 @@ In your project, update a few forms to use the `form with model` instead of `
 ### Extra Practice:
 
 1. Using TDD, create a Edit Song form using `form_with model`.
-2. Using TDD, creaet a New Playlist form using `form_with model`.
+2. Using TDD, create a New Playlist form using `form_with model`.
 
 ## Checks for Understanding
 

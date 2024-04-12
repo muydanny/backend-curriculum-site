@@ -83,7 +83,7 @@ Whenever we have a **one to many** relationship, Resource A will always **belong
 
 While databases are great at storing information, they are not so great at giving our applications information that is easily manipulated or passed around - Because the database is storing raw data, not Objects as we are used to seeing in Ruby. What we would like, is to be able to work with each record in our database as if it were a smart ruby object - that way we could give each record additional behaviors through ruby methods.  This is where an **ORM** comes in.  
 
-**ORMs** or **Object Relational Mappers** are a tool that sits between our application and our database and turns each record in our database into an object.  There are many **ORMs** for many different webframeworks.  The most common **ORM** for Ruby is [ActiveRecord](https://guides.rubyonrails.org/active_record_basics.html), and that is the one that we will be using. In fact, ActiveRecord is so standard that it is included in the base configuration of Rails.
+**ORMs** or **Object Relational Mappers** are a tool that sits between our application and our database and turns each record in our database into an object.  There are many **ORMs** for many different web frameworks.  The most common **ORM** for Ruby is [ActiveRecord](https://guides.rubyonrails.org/active_record_basics.html), and that is the one that we will be using. In fact, ActiveRecord is so standard that it is included in the base configuration of Rails.
 
 ## Checks for Understanding
 

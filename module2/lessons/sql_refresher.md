@@ -23,7 +23,7 @@ Note: If you get an error that says something like `Database username "YOUR_NAME
 
 The first thing you will see is a helpful note to enter `help` if you need some more information about how to use this interactive session. `\?` will provide you with some terminal specific commands, while `\h` will provide you with a list of SQL commands that offer additional documentation.
 
-In order to interact with our LittleShop database, we'll first need to connect to it. How do we know it exists or what it's named? First type `\list`. This will provide you with a list of databases avaialble to you.
+In order to interact with our LittleShop database, we'll first need to connect to it. How do we know it exists or what it's named? First type `\list`. This will provide you with a list of databases available to you.
 
 In order to connect to our database, type `\c little-shop-development` (or whatever `\list` tells you your database is called). Now you should be able to run SQL commands.
 

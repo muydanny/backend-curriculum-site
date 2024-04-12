@@ -279,7 +279,7 @@ You should now be able to refresh the page multiple times and get a Response eve
 
 ### Paths
 
-Right now, our app only generates one response. If you send a request to `localhost:9292/users`, `localhost:9292/unicorns`, or `locahost:9292/hello`, you will get the same response every time. Refactor your code so that your server can respond to different paths. You can pick whatever paths you want, but if you need some ideas:
+Right now, our app only generates one response. If you send a request to `localhost:9292/users`, `localhost:9292/unicorns`, or `localhost:9292/hello`, you will get the same response every time. Refactor your code so that your server can respond to different paths. You can pick whatever paths you want, but if you need some ideas:
 
 * Make you server respond to `/hello` with a greeting message
 * Make your server to respond to `/bio` with a short biography for yourself

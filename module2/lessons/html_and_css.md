@@ -102,7 +102,7 @@ This means that if there is part of a view we want to render on **every** page (
         <div class="explore-the-shore">
           <a href="https://www.denverzoo.org/explore-shore">Explore the Shore</a>
         </div>
-        <div class="lorikeet-advuenture">
+        <div class="lorikeet-adventure">
           <p>Come play with out lorikeets.</p>
         </div>
       </div>

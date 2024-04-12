@@ -7,7 +7,7 @@ title: How to Write a Great README
 
 * Student has reviewed recommended practices and exemplars of strong READMEs
 * Student is able to describe a template for a strong README
-* Student has implemented the template by writing thier own README
+* Student has implemented the template by writing their own README
 
 Mastery Expectation: HIGH. By the end of this lesson, students should feel completely confident in the skills listed here.
 

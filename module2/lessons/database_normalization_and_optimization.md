@@ -96,7 +96,7 @@ payload = '{
 
 * Review [this](https://www.kaggle.com/unitednations/global-commodity-trade-statistics/data) commodity trade data. How might you structure a normalized database to store this data?
 
-* Review [this](https://www.kaggle.com/aashita/nyt-comments/data) New York Times article data. How might you structure a normlalized database to store this data?
+* Review [this](https://www.kaggle.com/aashita/nyt-comments/data) New York Times article data. How might you structure a normalized database to store this data?
 
 
 

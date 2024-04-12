@@ -327,5 +327,5 @@ Remember to use your four phases of testing!
 
 ## Recap
 
-* What goes into your spec_helper in a Sintra app? What does each piece do?
+* What goes into your spec_helper in a Sinatra app? What does each piece do?
 * Create a Venn Diagram comparing MiniTest & RSpec. Think about set up of methods and how you check expected outcomes.

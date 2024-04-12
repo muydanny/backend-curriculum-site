@@ -105,7 +105,7 @@ _Answer these questions then take a short break_
 
 1. Think about the best-case input for a three element set. How many steps would it take to sort it? 
 2. If you add one element to the set and it's still in the best-case order, how does that change the number of steps to sort the set? 
-3. What algabraic equation would explain how this best case number changes with change to the number of elements in the set?
+3. What algebraic equation would explain how this best case number changes with change to the number of elements in the set?
 4. Based on your observations in Round 3, what equation could characterize how many operations are required to sort the worst-case input of *N* elements?
 
 Extension Questions:

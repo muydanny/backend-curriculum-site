@@ -79,7 +79,7 @@ Visit any web page, right click on any part of the page. A dropdown box will app
 
 On the left you will see what is currently being rendered (original html + anything else impacting the layout such as CSS and JavaScript).
 
-To the right of the HTML pane, there's a small sidebar that gives us styling information for the currently selected element. If you scroll down on the righ, you will see a handy graphic of how our element is being rendered.
+To the right of the HTML pane, there's a small sidebar that gives us styling information for the currently selected element. If you scroll down on the right, you will see a handy graphic of how our element is being rendered.
 
 #### Editing CSS
 Similar to the HTML pane, we can add or remove styles and adjust CSS property values from this pane. You can click on any style property associated with the selected element and change its value. You can also use the blue checkbox to toggle the style on or off.
@@ -145,6 +145,6 @@ To get started using the available templates, you must first include the necessa
 
 [CSS Zen Garden](http://www.csszengarden.com/)
 
-[CSS Psuedo-Classes & Psuedo-Elements](http://www.growingwiththeweb.com/2012/08/pseudo-classes-vs-pseudo-elements.html)
+[CSS Pseudo-Classes & Pseudo-Elements](http://www.growingwiththeweb.com/2012/08/pseudo-classes-vs-pseudo-elements.html)
 
 [Sass](https://sass-lang.com/guide)

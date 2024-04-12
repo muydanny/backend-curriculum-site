@@ -51,7 +51,7 @@ end
 
 This file indicates that you want to create a table in your database, and it will contain the attributes `title` and `description`, as well as timestamp columns which will be added automatically, `created_at` and `updated_at`. 
 
-If you now run `rails db:migrate`, you are telling your local database to execute this migration file in order to make this change. Once you've migrated your databsae, it's ready to hold task records. 
+If you now run `rails db:migrate`, you are telling your local database to execute this migration file in order to make this change. Once you've migrated your database, it's ready to hold task records. 
 
 ### Migrations and Fixing Forward
 

@@ -121,7 +121,7 @@ layout: page
 ## Wrap Up
 * What are the 5 main properties to use with Flexbox which we learned today? (There are many more, check out the resources below)
   * What does each do?
-  * What are the possible arguments you can pass each propery?
+  * What are the possible arguments you can pass each property?
 
 ## Resources
 

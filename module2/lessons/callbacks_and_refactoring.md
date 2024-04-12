@@ -72,7 +72,7 @@ Almost never. "After" callbacks can get messy. A PORO is a better option, most o
 
 What do we mean by Code Smell?
 Typically this means the code is a symptom that is pointing to a deeper issue.
-Thinking of this metophorically, if we have a leak in our roof and simply use a bucket to catch the water rather than repairing the roof.
+Thinking of this metaphorically, if we have a leak in our roof and simply use a bucket to catch the water rather than repairing the roof.
 Our bucket solution would be the 'code smell' that is pointing to the deeper issue of a leak in the roof.
 
 Callbacks are super powerful, but why should we use them with care?
@@ -199,7 +199,7 @@ Run our test we see this error:
 ```ruby
 # app/views/songs/show.html.erb
 <h1><%=@song.title %></h1>
-<p>Lenght: <%=@song.length%></p>
+<p>Length: <%=@song.length%></p>
 <p>Play Count: <%=@song.play_count%></p>
 ```
 

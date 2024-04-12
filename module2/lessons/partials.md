@@ -89,7 +89,7 @@ Let's see if we can put all this together to DRY up our `artists/edit` and `a
 
 ---
 
-You should now have `artists/_form.html.erb`, `artists/new.html.erb`  and  `artists/edit.html.erb` files in your views directory that look somthing like the following.
+You should now have `artists/_form.html.erb`, `artists/new.html.erb`  and  `artists/edit.html.erb` files in your views directory that look something like the following.
 
 **app/views/artists/_form.html.erb**
 

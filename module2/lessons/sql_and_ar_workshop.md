@@ -42,4 +42,4 @@ Pick one of the following problems to work on. You will split in to groups to wo
 
 ## Solutions
 You can compare your work to our `sql-and-ar-workshop-solutions` branch [here](https://github.com/turingschool-examples/set-list-7/tree/sql-and-ar-workshop-solutions). 
-Note, however, that the solutions we found are ___not the only___ correct solutions - yours may be strucutrally different especially when writing in AR, and that is ok! As long as the tests for each method pass, your query is likely good. 
+Note, however, that the solutions we found are ___not the only___ correct solutions - yours may be structurally different especially when writing in AR, and that is ok! As long as the tests for each method pass, your query is likely good. 

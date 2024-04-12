@@ -59,7 +59,7 @@ Another way DNS speeds up this whole process is with **caching**. Caching is whe
 
 You already use caching in your own brain! Have you ever had someone ask you, "what time is it?" so you look at your watch, and you say "it's 12:30.". Then a few seconds later, someone else asks, "hey, what time is it?". Instead of looking at your watch again, you say "It's 12:30" because you just looked at the time and can remember. This is the same idea that computers use when dealing with repeated requests asking for the same information. 
 
-For example, your computer may cache the answer of `2 + 2` as `4`. The next time you ask your computer what 2 + 2 is, rather than doing the computation, it will return the answer stored in its cache, which is 4. In this example, the cacluation of 2 + 2 is pretty simple, but you can see the benefits once the data we're after becomes very expensive to compute.
+For example, your computer may cache the answer of `2 + 2` as `4`. The next time you ask your computer what 2 + 2 is, rather than doing the computation, it will return the answer stored in its cache, which is 4. In this example, the calculation of 2 + 2 is pretty simple, but you can see the benefits once the data we're after becomes very expensive to compute.
 
 In DNS, any step of the lookup process may be **cached**. This makes it so that a number of steps in the process can be skipped if the information needed is already in cache.
 

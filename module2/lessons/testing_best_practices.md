@@ -61,7 +61,7 @@ From a Model perspective, the convention is to name your spec files in your mode
 
 Unlike Model tests, there is no strong convention for naming your Feature test files. The ideal would be for the names of your tests to help build documentation for your application - when someone steps in to your application, they should be able to review the tests to understand what your application is capable of.  If you want some guidance, or a starting place, there are two strategies that you will see used frequently at Turing.
 
-One option would be to name your spec files to match with the headline of a user story; that could look like this: `featuers/visitor_visits_song_index_spec.rb`.  This test file would then include any tests that revolve around a visitor visiting the songs index - what they see, what they can click on, etc.
+One option would be to name your spec files to match with the headline of a user story; that could look like this: `features/visitor_visits_song_index_spec.rb`.  This test file would then include any tests that revolve around a visitor visiting the songs index - what they see, what they can click on, etc.
 
 A second option is to structure your feature tests in the same way we structure our view folders.  In this option, your features directory might look like this:
 
@@ -82,7 +82,7 @@ Up to this point, you have likely been creating the 'setup' portion of your test
 RSpec.describe "songs index page", type: :feature do
   before :each do
     @artist = Artist.create!(name: '1903')
-    @song_1 = artist.songs.create!(title: "Don't stop belivin'", length: 303, play_count: 12345)
+    @song_1 = artist.songs.create!(title: "Don't stop believin'", length: 303, play_count: 12345)
     @song_2 = artist.songs.create!(title: "Bohemian Rhapsody", length: 540, play_count: 67829348)
   end
 

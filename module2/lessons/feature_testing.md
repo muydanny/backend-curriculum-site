@@ -227,7 +227,7 @@ Practice User Story 3
 As a user
 When I visit an Artist's show page
 Then I see the Artist's name
-And I see the Artist's average song lenth
+And I see the Artist's average song length
 And I see the Artist's total song count
 ```
 

@@ -23,8 +23,8 @@ Available [here](../slides/asset_pipeline/asset_pipeline)
 ## Overview
 
 * *Asset Exploration:* Explore how assets are loaded in the browser.
-* *Enter the Asset Pipeline:* Provide a high level descripition of the responsibilities of the asset pipeline.
-* *Putting it Together:* Descrbie how assets are stored/accessed in a Rails application.
+* *Enter the Asset Pipeline:* Provide a high level description of the responsibilities of the asset pipeline.
+* *Putting it Together:* Describe how assets are stored/accessed in a Rails application.
 
 ## Background
 
@@ -89,7 +89,7 @@ Our browser understands three languages:
 
 However, some people don't like writing plain old CSS or JavaScript. They create tools that will allow them to use things like variables in CSS (Sass/Less), or simplified JavaScript (CoffeeScript).
 
-Outside the context of a larger framework, you will neeed to use those same tools (e.g. Sass) to translate the code that you wrote into the vanilla CSS/JavaScript that our browsers understand.
+Outside the context of a larger framework, you will need to use those same tools (e.g. Sass) to translate the code that you wrote into the vanilla CSS/JavaScript that our browsers understand.
 
 The Asset Pipeline handles that process for us, making it just a little bit easier for us to prepare our applications for production.
 
