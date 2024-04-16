@@ -1,12 +1,12 @@
 # Intro to Caching in Rails
 
-This lesson plan last updated to work with Rails 7.0.6 and Ruby 3.2.2.
+This lesson plan last updated to work with Rails 7.1.2 and Ruby 3.2.2.
 
 ## Learning Goals
 
 - Understand caching as a performance optimization tool
 - Practice analyzing our applications to identify performance problems
-- Practice using Rails' built-in caching facilities
+- Practice using Rails' built-in caching facilities, utilizing both fragment and low-level caching
 
 ## Discussion — What is Caching?
 
@@ -38,7 +38,7 @@ class PizzaShop
   def make_me_a_pizza(type)
     puts "cooking up your #{type} pizza"
     sleep(3)
-    "One tasty #{type} pizza"
+    puts "One tasty #{type} pizza"
   end
 end
 
@@ -102,7 +102,7 @@ What sorts of things might we want to cache in a Rails app? (try to list at leas
 
 Fortunately this is such a common use-case that Rails includes built-in support for it via the cache helper. Let's take a look.
 
-## Workshop — Caching in Rails
+## Workshop — Caching in Rails pt. 1
 
 For this exercise we'll use the storedom repo. Get set up with it via the ever-familiar process:
 
@@ -155,7 +155,7 @@ Why do you need to restart your server?
 
 ## Step 2 — cache those items!
 
-Let's head over to the Items#index template (`app/views/items/index.html.erb`) and add some caching. Again, rails anticipates this very common use-case, so they give us a helper to make it as easy as possible. The caching helper looks like this:
+Let's head over to the Items#index template (`app/views/items/index.html.erb`) and add some caching. Again, rails anticipates this very common use-case, so they give us a helper to make it as easy as possible. This particular cache helper is designed for **fragment caching**, which means we are caching a fragment of view logic that is computationally expensive (i.e. big database queries). The caching helper looks like this:
 
 `cache { "some work to generate the cached data" }`
 
@@ -441,6 +441,14 @@ end
 ```
 
 Note here that on our first load, we are writing all of these fragments, and that when are refreshing, we are doing a much smaller hit to the database.
+
+## Caching in Rails pt 2: Low-Level Caching
+
+Rails also has some built in methods for caching in other parts of an application besides the view. Low-level caching is a great option for caching data that comes from an external API. 
+
+### Low-Level Caching Challenge
+
+With a pair, read through this section of the [docs](https://guides.rubyonrails.org/caching_with_rails.html#low-level-caching) about low-level caching, and see if you can implement it in the IpLocationService class. If you get stuck, check out the `caching-complete` branch of the Storedom repo. 
 
 
 ## Next Steps — If you finish all of the steps above, consider the following challenges
