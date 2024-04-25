@@ -235,21 +235,32 @@ There's one more improvement we should make to our code. If you look in the cont
 1. It isn't secure. If someone gets access to this code (you should always assume this is possible, even if your project is closed-source), someone could copy our API key and then would be able to masquerade as our application. They could, for example, spam the Propublica API with requests and force us over the rate limit we discussed earlier. If our API key has access to paid features, they could get this access for free.
 2. It isn't flexible. If we need to change the API key, we'd need to go into the code base and manually configure it. If we use this API key in multiple places, we'd need to change it in each place.
 
-What we really want is to put our environment configuration somewhere that is specific to this project. Luckily there is a handy gem called [Figaro](https://github.com/laserlemon/figaro) that allows us to do just that. Read through the docs to figure out how it works.
+What we really want is to put our environment configuration somewhere that is specific to this project. Luckily, Rails provides a seamless way to store environment variables via Rails Application Credentials.
 
-First we will need to add the Figaro gem to our Gemfile outside of the `:development`/`:test` blocks. Then, run `bundle exec figaro install` from the command line. This will create a file `config/application.yml`. This file will contain our keys. We don't want to push this file to GitHub for the same reason we don't want the keys hard coded in our program, so this file should be added to the `gitignore`.
+To set up our API key, complete the following steps:
 
-🚨 **NOTE:** Figaro is _supposed_ to add this new config file to your .gitignore automatically, but there is a bug that may produce an error and prevent it from adding it for you. **Before proceeding, manually check your `.gitignore` file and add `config/application.yml` if it is not there!**
+* Verify that you are able to launch VS Code from the command line by running `code`
+  * If the following steps don’t work, you’ll need to follow these [Launching From the Command Line](https://code.visualstudio.com/docs/setup/mac#:~:text=Keep%20in%20Dock.-,Launching%20from%20the%20command%20line,code) steps to configure the command
+* Generate what is called a ‘master key’ by running `EDITOR="code --wait" rails credentials:edit` in the command line
+  * This will create a new key in `config/master.key` and a temporary YAML file which will open in your text editor
+* Add your Propublica API Key to the opened file
+  * Note the indentation in the example below. The tab before `key` is important, as it results in the ability to access this value under a propublica "object".
+  * The `secret_key_base` value is unique to YOUR repo. Use what is automatically generated and _don't_ copy this one.
 
-Inside the `application.yml` file, add your API key:
+```
+propublica:
+  key: <Your API key here>
 
-*config/application.yml*
-
-```yaml
-PROPUBLICA_API_KEY: <YOUR API KEY>
+# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
+secret_key_base: ugsdfeadsfg98a7sd987asjkas98asd87asdkdwfdg876fgd
 ```
 
-And then you’ll have to replace the hardcoded key in your controller.
+* Save and close the file, and you should see in your terminal that the file was encrypted and saved
+* Note: To use these credentials and environment variables with a team you’ll need to share the contents of the `config/master.key` file with your teammates securely, and they’ll need to create this file with that key as the contents
+
+[Here is a walkthrough video of the steps above, to help you set up your Rails Application Credentials.](https://drive.google.com/file/d/1Cy598b1W1d7nZ-gv6ur_gPmAGOmaD3Gi/view)
+
+Next, you’ll have to replace the hardcoded key in your controller.
 
 *app/controllers/search_controller.rb*
 
@@ -259,7 +270,7 @@ class SearchController < ApplicationController
     state = params[:state]
 
     conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = ENV["PROPUBLICA_API_KEY"]
+      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
     end
 
     response = conn.get("/congress/v1/members/house/#{state}/current.json")
