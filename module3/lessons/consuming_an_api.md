@@ -244,10 +244,12 @@ To set up our API key, complete the following steps:
 * Generate what is called a ‘master key’ by running `EDITOR="code --wait" rails credentials:edit` in the command line
   * This will create a new key in `config/master.key` and a temporary YAML file which will open in your text editor
 * Add your Propublica API Key to the opened file
+  * Note the indentation in the example below. The tab before `key` is important, as it results in the ability to access this value under a propublica "object".
+  * The `secret_key_base` value is unique to YOUR repo. Use what is automatically generated and _don't_ copy this one.
 
 ```
 propublica:
-  key: asdsa3498serghjirteg978ertertwhter
+  key: <Your API key here>
 
 # Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
 secret_key_base: ugsdfeadsfg98a7sd987asjkas98asd87asdkdwfdg876fgd
