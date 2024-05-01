@@ -17,7 +17,7 @@ This lesson was built on Ruby 3.2.2 and Rails 7.0.5.1
 
 ## Summary
 
-What we are going to be working on today is creating an app that reaches out and consumes data from an external API, and then displays and formats that data on a web page. The API we will be using is the ProPublica API, and we will be using it to grab a list of Representatives from Congress.
+What we are going to be working on today is creating an app that reaches out and consumes data from an external API, and then displays and formats that data on a web page. The API we will be using is the Congress.gov API, and we will be using it to grab a list of Representatives from Congress.
 
 We will accomplish that by starting with a user story.
 
@@ -25,11 +25,11 @@ We will accomplish that by starting with a user story.
 As a user
 When I visit "/"
 And I select "Colorado" from the dropdown
-And I click on "Locate Members of the House"
-Then my path should be "/search" with "state=CO" in the parameters
-And I should see a message "7 Results"
-And I should see a list of the 7 members of the house for Colorado
-And I should see a name, role, party, and district for each member
+And I click on "Locate Representatives"
+Then my path should be "/search" with "state=Colorado" in the parameters
+And I should see a message "3 Results"
+And I should see a list of the representatives for Colorado
+And I should see a name, party, and state for each member
 ```
 
 As you can see, it lines out all that we will do. Let’s get started.
@@ -38,7 +38,7 @@ As you can see, it lines out all that we will do. Let’s get started.
 
 We start by spinning up our rails app. We are going to call it House Salad.
 
-Because we're getting information about the House of Representatives and we're gonna toss it around. Kind of.
+Because we're getting information about Congress and the House of Representatives and we're gonna toss it around. Kind of.
 
 ```bash
 $ git clone https://github.com/turingschool-examples/house-salad-7
@@ -70,7 +70,7 @@ Now let's open up that file and translate our user story into a test.
 ```ruby
 require 'rails_helper'
 
-feature "user can search for house members" do
+feature "user can search for members" do
 
   scenario "user submits valid state name" do
     # As a user
@@ -79,27 +79,20 @@ feature "user can search for house members" do
 
     select "Colorado", from: :state
     # And I select "Colorado" from the dropdown
-    click_on "Locate Members of the House"
-    # And I click on "Locate Members from the House"
+    click_on "Locate Representatives"
+    # And I click on "Locate Representatives"
     expect(current_path).to eq(search_path)
-    # Then my path should be "/search" with "state=CO" in the parameters
-    expect(page).to have_content("7 Results")
-    # And I should see a message "7 Results"
-    expect(page).to have_css(".member", count: 8)
-    # And I should see a list of 8 the members of the house for Colorado
+    # I should see a list the members for Colorado
 
     within(first(".member")) do
       expect(page).to have_css(".name")
-      expect(page).to have_css(".role")
       expect(page).to have_css(".party")
-      expect(page).to have_css(".district")
+      expect(page).to have_css(".state")
     end
-    # And I should see a name, role, party, and district for each member
+    # And I should see a name, role, party, and state for each member
   end
 end
 ```
-
-*I do want to note that as of the writing of this - Colorado has 8 Congressional Districts. Up from previously 7. This may change in the future. If you’re getting errors, do a quick Google search just to verify.*
 
 And so we run our tests. We should get an error concerning a `search_path`.
 
@@ -127,45 +120,61 @@ $ mkdir app/views/search
 $ touch app/views/search/index.html.erb
 ```
 
-Now we get the error, `expected to find text "8 Results"`.
+Now we get the error, `expected to find css ".member" at least 1 time"`.
 
 ## Consuming the API
 
-At this point, we are going to have to consume the Propublica API to get the data we need. Read through the [Propublica API documentation](https://projects.propublica.org/api-docs/congress-api/) and try to pull out the relevant pieces of information. Yes, you actually have to read it.
+At this point, we are going to have to consume the Congress API to get the data we need. Read through the [Congress.gov API documentation](https://api.congress.gov/) and try to pull out the relevant pieces of information. Yes, you actually have to read it.
 
 ### API Keys
 
-One thing you'll notice when reading the docs is that it requires us to sign up for an api key. An api key is a way for the api's owners to authenticate users. Most apis will require that you sign up for a key. This allows the api owners to track who is using their api and how much. Most apis limit the rate at which you can use the api for free, and typically you have to pay to increase this usage. You'll see an example of this in the Propublica docs: "Usage is limited to 5000 requests per day". In this case, avoid running your code 5000 times and you should be good.
+One thing you'll notice when reading the docs is that it requires us to sign up for an api key. An api key is a way for the api's owners to authenticate users. Most apis will require that you sign up for a key. This allows the api owners to track who is using their api and how much. Most apis limit the rate at which you can use the api for free, and typically you have to pay to increase this usage. You'll see an example of this in the Congress.gov API docs: "Usage is limited to 5000 requests per hour". In this case, avoid running your code 5000 times and you should be good.
 
-If you haven't already, sign up for a Propublica API key.
+If you haven't already, [sign up for a Congress.gov key](https://api.congress.gov/sign-up/).
 
 ### Authentication
 
-Another key piece to pull out of the Propublica documentation is the section on "Authentication". Now that we have an API key, this tells us how to use it:
+Another key piece to pull out of the [Congress.gov documentation](https://github.com/LibraryOfCongress/api.congress.gov/?tab=readme-ov-file) is in the section on "Keys". Now that we have an API key, the included link tells us how to use it:
 
 ```bash
-The API key must be included in all API requests to the server, as a header:
+Pass the API key into the X-Api-Key header:
 
-X-API-Key: PROPUBLICA_API_KEY
+X-API-Key: CONGRESS_API_KEY
+```
+
+This API also allows us to pass our key with the request as a query parameter: 
+
+```bash
+GET /amendment/
+
+Example Request
+
+https://api.congress.gov/v3/amendment?api_key=[INSERT_KEY]
 ```
 
 ### Endpoints
 
 We also need to find the documentation for the endpoints we will need. Explore the docs and see if you can find the endpoint.
 
-Remember, we are trying to get a list of house members from a particular state. There is a button at the top of the page for `Members`. On the `Members` page, there is a table of contents on the left with the option for `Get Current Members by State/District`. That looks promising.
+Remember, we are trying to get a list of members from a particular state. There is a collapsible section under the 'member' header which says it returns a list of congressional members. That looks promising!
 
 By reading through the documentation for this endpoint, we can determine that we'll need to send a request like:
 
 ```bash
-GET https://api.propublica.org/congress/v1/members/house/co/current.json
+GET https://api.congress.gov/v3/member
 ```
 
-along with our API key in a header. Using this information, see if you can hit the API endpoint using Postman. I do want to note that with the request above, we are hardcoding in the fact that we are searching for the Colorado members of Congress. Try crafting your own request so you can get the results of another state.
+along with our API key in a header. Keep in mind that if you are not passing your API key as a `X-API-KEY` header, you will need to pass it as a query param:
+
+```bash
+GET https://api.congress.gov/v3/member?api_key=[CONGRESS_API_KEY]
+```
+
+Using this information, see if you can hit the API endpoint using Postman. I do want to note that with the request above, we are getting a list of all members, regardless of their state and their chamber (some will be from the Senate, and others from the House of Representatives).
 
 ### Make the Request
 
-Let's run our tests to remind us of where we left off. Oh right, we're getting `expected to find text "8 Results"`.
+Let's run our tests to remind us of where we left off. Oh right, we're getting `expected to find css ".member" at least 1 time`.
 
 Now that we know what request we want to send, we need to send it to get the data we want to display.
 
@@ -182,18 +191,20 @@ class SearchController < ApplicationController
   def index
     state = params[:state]
 
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
       faraday.headers["X-API-Key"] = '<YOUR API KEY>'
     end
 
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
+    response = conn.get("/v3/member?limit=250")
 
     binding.pry
   end
 end
 ```
 
-Make sure you replace `<YOUR API KEY>` with the Propublica API key you signed up for earlier.
+Make sure you replace `<YOUR API KEY>` with the API key you signed up for earlier.
+
+Since we want to get all possible results, we'll include a query param for the maximum limit available, as specified in the 'parameters' section of this endpoint's docs.
 
 When we assign `conn`, does this make an HTTP request? What are these lines of code doing? (review the docs if you aren't sure)
 
@@ -201,13 +212,91 @@ In the code above, we set up a variable to hold the connection information, we t
 
 When we run the code and hit the pry, we can visually inspect `response` and `response.body` to make sure it contains data and not an error message or something else unexpected.
 
-Once we've verified our request was successful, we can parse the data and pass it to our view:
+Once we've verified our request was successful, we can parse the data and pass it to our view. We'll need to add some conditional logic so that we're only returning members from the state we have in `params`.
+
+NOTE: This repo was updated between the 2403 and 2405 innings. If you cloned an older version, you'll need to update an existing helper module so that the `us_states` method looks like this:
+
+*app/helpers/application_helper.rb*
+
+```ruby
+def us_states
+  [
+    'Alabama',
+    'Alaska',
+    'Arizona',
+    'Arkansas',
+    'California',
+    'Colorado',
+    'Connecticut',
+    'Delaware',
+    'District of Columbia',
+    'Florida',
+    'Georgia',
+    'Hawaii',
+    'Idaho',
+    'Illinois',
+    'Indiana',
+    'Iowa',
+    'Kansas',
+    'Kentucky',
+    'Louisiana',
+    'Maine',
+    'Maryland',
+    'Massachusetts',
+    'Michigan',
+    'Minnesota',
+    'Mississippi',
+    'Missouri',
+    'Montana',
+    'Nebraska',
+    'Nevada',
+    'New Hampshire',
+    'New Jersey',
+    'New Mexico',
+    'New York',
+    'North Carolina',
+    'North Dakota',
+    'Ohio',
+    'Oklahoma',
+    'Oregon',
+    'Pennsylvania',
+    'Puerto Rico',
+    'Rhode Island',
+    'South Carolina',
+    'South Dakota',
+    'Tennessee',
+    'Texas',
+    'Utah',
+    'Vermont',
+    'Virginia',
+    'Washington',
+    'West Virginia',
+    'Wisconsin',
+    'Wyoming'
+  ]
+```
 
 *app/controllers/search_controller.rb*
 
 ```ruby
-json = JSON.parse(response.body, symbolize_names: true)
-@members = json[:results]
+class SearchController < ApplicationController
+  def index
+    state = params[:state]
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = "c8A5PNW7BC1ccEdzMVK0s5WZcJtZsFTUEaRVD3Up"
+    end
+
+    response = conn.get("/v3/member?limit=250")
+    
+    json = JSON.parse(response.body, symbolize_names: true)
+    @members_by_state = []
+    json[:members].each do |member_data|
+      if member_data[:state] == state
+        @members_by_state << member_data
+      end
+    end
+  end
+end
 ```
 
 And then we need to add some code to our view:
@@ -219,9 +308,8 @@ And then we need to add some code to our view:
 <% @members.each do |member| %>
   <ul class="member">
     <li class="name"><%= member[:name] %></li>
-    <li class="role"><%= member[:role] %></li>
-    <li class="party"><%= member[:party] %></li>
-    <li class="district"><%= member[:district] %></li>
+    <li class="party"><%= member[:partyName] %></li>
+    <li class="state"><%= member[:state] %></li>
   </ul>
 <% end %>
 ```
@@ -232,7 +320,7 @@ And now our test is passing. As always, run your server and check your work by h
 
 There's one more improvement we should make to our code. If you look in the controller, we have hard coded our API key. There's a couple reasons we don't want to do this:
 
-1. It isn't secure. If someone gets access to this code (you should always assume this is possible, even if your project is closed-source), someone could copy our API key and then would be able to masquerade as our application. They could, for example, spam the Propublica API with requests and force us over the rate limit we discussed earlier. If our API key has access to paid features, they could get this access for free.
+1. It isn't secure. If someone gets access to this code (you should always assume this is possible, even if your project is closed-source), someone could copy our API key and then would be able to masquerade as our application. They could, for example, spam the Congress API with requests and force us over the rate limit we discussed earlier. If our API key has access to paid features, they could get this access for free.
 2. It isn't flexible. If we need to change the API key, we'd need to go into the code base and manually configure it. If we use this API key in multiple places, we'd need to change it in each place.
 
 What we really want is to put our environment configuration somewhere that is specific to this project. Luckily, Rails provides a seamless way to store environment variables via Rails Application Credentials.
@@ -243,12 +331,12 @@ To set up our API key, complete the following steps:
   * If the following steps don’t work, you’ll need to follow these [Launching From the Command Line](https://code.visualstudio.com/docs/setup/mac#:~:text=Keep%20in%20Dock.-,Launching%20from%20the%20command%20line,code) steps to configure the command
 * Generate what is called a ‘master key’ by running `EDITOR="code --wait" rails credentials:edit` in the command line
   * This will create a new key in `config/master.key` and a temporary YAML file which will open in your text editor
-* Add your Propublica API Key to the opened file
-  * Note the indentation in the example below. The tab before `key` is important, as it results in the ability to access this value under a propublica "object".
+* Add your API Key to the opened file
+  * Note the indentation in the example below. The tab before `key` is important, as it results in the ability to access this value under a congress "object".
   * The `secret_key_base` value is unique to YOUR repo. Use what is automatically generated and _don't_ copy this one.
 
 ```
-propublica:
+congress:
   key: <Your API key here>
 
 # Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
@@ -268,15 +356,19 @@ Next, you’ll have to replace the hardcoded key in your controller.
 class SearchController < ApplicationController
   def index
     state = params[:state]
-
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+    response = conn.get("/v3/member?limit=250")
+    
     json = JSON.parse(response.body, symbolize_names: true)
-    @members = json[:results]
+    @members_by_state = []
+    json[:members].each do |member_data|
+      if member_data[:state] == state
+        @members_by_state << member_data
+      end
+    end
   end
 end
 ```
