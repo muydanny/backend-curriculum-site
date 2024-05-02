@@ -115,16 +115,135 @@ class SearchController < ApplicationController
 end
 ```
 
+While we're at it, let's add the view for this controller action.
+
 ```bash
 $ mkdir app/views/search
 $ touch app/views/search/index.html.erb
 ```
 
-Now we get the error, `expected to find css ".member" at least 1 time"`.
+Run the test again, and you should get the error `Capybara::ElementNotFound: Unable to find link or button "Locate Representatives"`. Why is our test able to find the `select` field, but not the "Locate Representatives" button? The view file that we just created (`app/views/search/index.html.erb`) is empty.
+
+If you're reading this lesson plan in spring of 2024, you know that we're working with a legacy repo due to the deprecation of the Propublica API. As a backend engineer, you may face similar situations where your code needs to be updated because of a broken dependency, so this is good practice! 
+
+To get a better understanding of what's going on, put a `save_and_open_page` in our test:
+
+```ruby
+require 'rails_helper'
+
+feature "user can search for members" do
+  scenario "user submits valid state name" do
+    visit '/'
+
+    select "Colorado", from: :state
+    save_and_open_page
+    click_on "Locate Representatives"
+
+    expect(current_path).to eq(search_path)
+
+    within(first(".member")) do
+      expect(page).to have_css(".name")
+      expect(page).to have_css(".party")
+      expect(page).to have_css(".state")
+    end
+  end
+end
+```
+
+There's a button on this page, but it doesn't have the text we want. Can you figure out where this form is coming from without reading ahead?
+
+It's not in the new (empty) view we just created, but if you searched your codebase for any of the text/HTML you saw in the launchy window, you might have come across `application.html.erb`. Let's change the legacy code in that file to align with our new test. We're going from this:
+
+```ruby
+<%= form_tag :search, method: :get, class: "form-inline" do %>
+  <div class="form-group search-field">
+    <%= select_tag :state, options_for_select(us_states) %>
+    <%= submit_tag "Locate Members of the House", class: "btn btn-primary" %>
+  </div>
+<% end %>
+```
+
+To this:
+
+```ruby
+<%= form_tag :search, method: :get, class: "form-inline" do %>
+  <div class="form-group search-field">
+    <%= select_tag :state, options_for_select(us_states) %>
+    <%= submit_tag "Locate Representatives", class: "btn btn-primary" %>
+  </div>
+<% end %>
+```
+
+There's one more thing we need to update about this form: the `options_for_select` argument. We have access to the `us_states` method everywhere because it's defined in an `ApplicationHelper` module, but the new API provider will need these states in a different format. Take a moment to make sure your `app/helpers/application_helper.rb` file contains the following code:
+
+```ruby
+module ApplicationHelper
+  def us_states
+    [
+      'Alabama',
+      'Alaska',
+      'Arizona',
+      'Arkansas',
+      'California',
+      'Colorado',
+      'Connecticut',
+      'Delaware',
+      'District of Columbia',
+      'Florida',
+      'Georgia',
+      'Hawaii',
+      'Idaho',
+      'Illinois',
+      'Indiana',
+      'Iowa',
+      'Kansas',
+      'Kentucky',
+      'Louisiana',
+      'Maine',
+      'Maryland',
+      'Massachusetts',
+      'Michigan',
+      'Minnesota',
+      'Mississippi',
+      'Missouri',
+      'Montana',
+      'Nebraska',
+      'Nevada',
+      'New Hampshire',
+      'New Jersey',
+      'New Mexico',
+      'New York',
+      'North Carolina',
+      'North Dakota',
+      'Ohio',
+      'Oklahoma',
+      'Oregon',
+      'Pennsylvania',
+      'Puerto Rico',
+      'Rhode Island',
+      'South Carolina',
+      'South Dakota',
+      'Tennessee',
+      'Texas',
+      'Utah',
+      'Vermont',
+      'Virginia',
+      'Washington',
+      'West Virginia',
+      'Wisconsin',
+      'Wyoming'
+    ]
+  end
+end
+```
+
+Phew. Good thing all those values are encapsulated in a module, right?
+
+Run the tests again, and now we get the error `expected to find css ".member" at least 1 time but there were no matches"`.
 
 ## Consuming the API
 
-At this point, we are going to have to consume the Congress API to get the data we need. Read through the [Congress.gov API documentation](https://api.congress.gov/) and try to pull out the relevant pieces of information. Yes, you actually have to read it.
+At this point, we are going to have to consume the Congress API to get the data we need. Read through the [Congress.gov API documentation](https://api.congress.gov/) and try to pull out the relevant pieces of information. 
 
 ### API Keys
 
@@ -134,13 +253,15 @@ If you haven't already, [sign up for a Congress.gov key](https://api.congress.go
 
 ### Authentication
 
-Another key piece to pull out of the [Congress.gov documentation](https://github.com/LibraryOfCongress/api.congress.gov/?tab=readme-ov-file) is in the section on "Keys". Now that we have an API key, the included link tells us how to use it:
+Another important piece to pull out of the [Congress.gov documentation](https://github.com/LibraryOfCongress/api.congress.gov/?tab=readme-ov-file) is in the section on "Keys". There's a link to additonal docs which tell us how to use our API key:
 
 ```bash
 Pass the API key into the X-Api-Key header:
 
 X-API-Key: CONGRESS_API_KEY
 ```
+
+Every API provider organizes their documentation slightly differently. If you're having trouble finding the above example, make sure to explore all the links mentioned under the "Keys" section of the [Congress.gov docs](https://github.com/LibraryOfCongress/api.congress.gov/?tab=readme-ov-file).
 
 This API also allows us to pass our key with the request as a query parameter: 
 
@@ -156,7 +277,9 @@ https://api.congress.gov/v3/amendment?api_key=[INSERT_KEY]
 
 We also need to find the documentation for the endpoints we will need. Explore the docs and see if you can find the endpoint.
 
-Remember, we are trying to get a list of members from a particular state. There is a collapsible section under the 'member' header which says it returns a list of congressional members. That looks promising!
+Remember, we are trying to give our users a list of members from a particular state. If we can get a list of members from the API, our application can filter through those results to only return members from the requested state.
+
+There is a collapsible section under the 'member' header of these docs, which says it returns a list of congressional members. That looks promising!
 
 By reading through the documentation for this endpoint, we can determine that we'll need to send a request like:
 
@@ -164,13 +287,13 @@ By reading through the documentation for this endpoint, we can determine that we
 GET https://api.congress.gov/v3/member
 ```
 
-along with our API key in a header. Keep in mind that if you are not passing your API key as a `X-API-KEY` header, you will need to pass it as a query param:
+along with our API key in a header. Keep in mind that if you are not passing your API key as a `X-API-Key` header, you will need to pass it as a query param:
 
 ```bash
 GET https://api.congress.gov/v3/member?api_key=[CONGRESS_API_KEY]
 ```
 
-Using this information, see if you can hit the API endpoint using Postman. I do want to note that with the request above, we are getting a list of all members, regardless of their state and their chamber (some will be from the Senate, and others from the House of Representatives).
+Using this information, see if you can hit the API endpoint using Postman. Note that with the request above, we are getting a list of all members, regardless of their state and their chamber (some will be from the Senate, and others from the House of Representatives).
 
 ### Make the Request
 
@@ -204,7 +327,7 @@ end
 
 Make sure you replace `<YOUR API KEY>` with the API key you signed up for earlier.
 
-Since we want to get all possible results, we'll include a query param for the maximum limit available, as specified in the 'parameters' section of this endpoint's docs.
+Since we want to get all possible results, and the default response returns a limited set, we'll include a query param for the maximum limit available, as specified in the 'parameters' section of this endpoint's docs.
 
 When we assign `conn`, does this make an HTTP request? What are these lines of code doing? (review the docs if you aren't sure)
 
@@ -213,68 +336,6 @@ In the code above, we set up a variable to hold the connection information, we t
 When we run the code and hit the pry, we can visually inspect `response` and `response.body` to make sure it contains data and not an error message or something else unexpected.
 
 Once we've verified our request was successful, we can parse the data and pass it to our view. We'll need to add some conditional logic so that we're only returning members from the state we have in `params`.
-
-NOTE: This repo was updated between the 2403 and 2405 innings. If you cloned an older version, you'll need to update an existing helper module so that the `us_states` method looks like this:
-
-*app/helpers/application_helper.rb*
-
-```ruby
-def us_states
-  [
-    'Alabama',
-    'Alaska',
-    'Arizona',
-    'Arkansas',
-    'California',
-    'Colorado',
-    'Connecticut',
-    'Delaware',
-    'District of Columbia',
-    'Florida',
-    'Georgia',
-    'Hawaii',
-    'Idaho',
-    'Illinois',
-    'Indiana',
-    'Iowa',
-    'Kansas',
-    'Kentucky',
-    'Louisiana',
-    'Maine',
-    'Maryland',
-    'Massachusetts',
-    'Michigan',
-    'Minnesota',
-    'Mississippi',
-    'Missouri',
-    'Montana',
-    'Nebraska',
-    'Nevada',
-    'New Hampshire',
-    'New Jersey',
-    'New Mexico',
-    'New York',
-    'North Carolina',
-    'North Dakota',
-    'Ohio',
-    'Oklahoma',
-    'Oregon',
-    'Pennsylvania',
-    'Puerto Rico',
-    'Rhode Island',
-    'South Carolina',
-    'South Dakota',
-    'Tennessee',
-    'Texas',
-    'Utah',
-    'Vermont',
-    'Virginia',
-    'Washington',
-    'West Virginia',
-    'Wisconsin',
-    'Wyoming'
-  ]
-```
 
 *app/controllers/search_controller.rb*
 
@@ -289,6 +350,7 @@ class SearchController < ApplicationController
     response = conn.get("/v3/member?limit=250")
     
     json = JSON.parse(response.body, symbolize_names: true)
+
     @members_by_state = []
     json[:members].each do |member_data|
       if member_data[:state] == state
@@ -304,8 +366,8 @@ And then we need to add some code to our view:
 *app/views/search/index.html.erb*
 
 ```html
-<h1><%= @members.count %> Results</h1>
-<% @members.each do |member| %>
+<h1><%= @members_by_state.count %> Results</h1>
+<% @members_by_state.each do |member| %>
   <ul class="member">
     <li class="name"><%= member[:name] %></li>
     <li class="party"><%= member[:partyName] %></li>
@@ -331,6 +393,7 @@ To set up our API key, complete the following steps:
   * If the following steps don’t work, you’ll need to follow these [Launching From the Command Line](https://code.visualstudio.com/docs/setup/mac#:~:text=Keep%20in%20Dock.-,Launching%20from%20the%20command%20line,code) steps to configure the command
 * Generate what is called a ‘master key’ by running `EDITOR="code --wait" rails credentials:edit` in the command line
   * This will create a new key in `config/master.key` and a temporary YAML file which will open in your text editor
+  * If you get a message that says "Couldn't decrypt config/credentials.yml.enc", delete that file and run the above command again.
 * Add your API Key to the opened file
   * Note the indentation in the example below. The tab before `key` is important, as it results in the ability to access this value under a congress "object".
   * The `secret_key_base` value is unique to YOUR repo. Use what is automatically generated and _don't_ copy this one.
@@ -388,6 +451,3 @@ Run the tests again to confirm everything is working.
 - Do you like the index action in the search controller?
 - How would you start to refactor this?
 
-Our next step is to refactor this.
-
-You can find a completed working repo for this lesson here: [https://github.com/turingschool-examples/house-salad-7/tree/api-consumption-complete](https://github.com/turingschool-examples/house-salad-7/tree/api-consumption-complete)
