@@ -11,7 +11,7 @@ We will start with the house-salad-7 app's [`api-consumption-complete` branch](h
 Instructions on using Rails Encrypted Credentials can be found [here](./rails_encrypted_credentials.md).  
 
 <section class="call-to-action">
-NOTE: This lesson assumes that Rails Encrypted Credentials have already been set up with a `propublica[:key]` ready to go. If you haven't already done so, get a Propublica API Key [here](https://www.propublica.org/datastore/api/propublica-congress-api). 
+NOTE: This lesson assumes that Rails Encrypted Credentials have already been set up with a `congress[:key]` ready to go. If you haven't already done so, get a Propublica API Key [here](https://api.congress.gov/sign-up/). 
 </section>
 
 ## Learning Goals
@@ -46,7 +46,7 @@ It's less likely, although perhaps more exciting, to select a means of travel wi
 
 Writing code this way makes it more likely that we'll end up with abstractions that aren't vulnerable to breaking if implementation changes.
 
-For example, currently we are using Propublica to retrieve this data. But this data used to be provided by an API called "The Sunlight Foundation". Google also makes some of this data available through their Civics API. By deciding how we want to interface with these objects and classes (picking our destination) prior to implementing API calls (how we are going to get there), we make this view more robust and less brittle. Imagine if we were parsing hashes here instead of objects. If the API changes, the keys of that hash likely change and this view suddenly stops working. We want to minimize the number of layers that need to change if we switch out our API.
+For example, currently we are using the Congress.gov API to retrieve this data. But this data used to be provided by an API called "The Sunlight Foundation". Google also makes some of this data available through their Civics API. By deciding how we want to interface with these objects and classes (picking our destination) prior to implementing API calls (how we are going to get there), we make this view more robust and less brittle. Imagine if we were parsing hashes here instead of objects. If the API changes, the keys of that hash likely change and this view suddenly stops working. We want to minimize the number of layers that need to change if we switch out our API.
 
 ### 2. Red, Green, Refactor
 
@@ -62,36 +62,39 @@ Right now, our app does what it's supposed to do but it doesn’t FEEL GOOD. Spe
 class SearchController < ApplicationController
   def index
     state = params[:state]
-
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+    response = conn.get("/v3/member?limit=250")
+    
     json = JSON.parse(response.body, symbolize_names: true)
-    @members = json[:results]
+    @members_by_state = []
+    json[:members].each do |member_data|
+      if member_data[:state] == state
+        @members_by_state << member_data
+      end
+    end
   end
 end
 ```
 
-And let’s also look at our view. The first thing we'll tackle is the last line in the controller, `@members = json[:results]`. We are passing an Array of Hashes to the view via `@members`. Let's take a look at the view:
+And let’s also look at our view. The first thing we'll tackle is the last part of the controller, starting with `json[:members].each`. We are passing an Array of Hashes to the view via `@members_by_state`. Let's take a look at the view:
 
 *app/views/search/index.html.erb*
 
 ```html
-<h1><%= @members.count %> Results</h1>
-<% @members.each do |member| %>
+<h1><%= @members_by_state.count %> Results</h1>
+<% @members_by_state.each do |member| %>
   <ul class="member">
     <li class="name"><%= member[:name] %></li>
-    <li class="role"><%= member[:role] %></li>
-    <li class="party"><%= member[:party] %></li>
-    <li class="district"><%= member[:district] %></li>
+    <li class="party"><%= member[:partyName] %></li>
+    <li class="state"><%= member[:state] %></li>
   </ul>
 <% end %>
 ```
 
-This code is not very abstract since all the implementation details of how to dig through that Hash are exposed. It's also not very encapsulated since all of the data is combined into this one giant array called `@members` rather than organized into logical containers.
+This code is not very abstract since all the implementation details of how to dig through that Hash are exposed. It's also not very encapsulated since all of the data is combined into this one giant array called `@members_by_state` rather than organized into logical containers.
 
 So, what we want to do is create objects that will encapsulate that data and abstract away the details of how to interact with that data.
 
@@ -103,17 +106,19 @@ Let's declare the code we wish existed:
 class SearchController < ApplicationController
   def index
     state = params[:state]
-
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-KEY"] = Rails.application.credentials.propublica[:key]
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+    response = conn.get("/v3/member?limit=250")
+    
     json = JSON.parse(response.body, symbolize_names: true)
-    @members = json[:results].map do |member_data|
-      Member.new(member_data)
+    members = json[:members].map do |member_data|
+      if member_data[:state] == state
+        Member.new(member_data)
+      end
     end
+    @members_by_state = members.compact
   end
 end
 ```
@@ -145,14 +150,13 @@ Now our view is complaining about undefined method `[]` for a `Member` objec
 *app/views/search/index.rb*
 
 ```html
-<h1><%= @members.size %> Results </h1>
-<% @members.each do |member| %>
+<h1><%= @members_by_state.count %> Results</h1>
+<% @members_by_state.each do |member| %>
   <ul class="member">
-  <li class="name"><%= member.name %></li>
-  <li class="role"><%= member.role %></li>
-  <li class="party"><%= member.party %></li>
-  <li class="district"><%= member.district %></li>
-</ul>
+    <li class="name"><%= member.name %></li>
+    <li class="party"><%= member.party %></li>
+    <li class="state"><%= member.state %></li>
+  </ul>
 <% end %>
 ```
 
@@ -163,15 +167,13 @@ Now we get undefined method `name` for our Member objects. All that's left to 
 ```ruby
 class Member
   attr_reader :name,
-              :role,
               :party,
-              :district
-
+              :state
+              
   def initialize(attributes)
-    @name       = attributes[:name]
-    @role       = attributes[:role]
-    @party      = attributes[:party]
-    @district   = attributes[:district]
+    @name = attributes[:name]
+    @party = attributes[:partyName]
+    @state = attributes[:state]
   end
 end
 ```
@@ -187,18 +189,16 @@ RSpec.describe Member do
   it "exists" do
     attrs = {
       name: "Leslie Knope",
-      district: "1",
-      role: "Representative",
-      party: "Pizza"
+      partyName: "Pizza",
+      state: "Indiana"
     }
 
     member = Member.new(attrs)
 
     expect(member).to be_a Member
     expect(member.name).to eq("Leslie Knope")
-    expect(member.role).to eq("Representative")
     expect(member.party).to eq("Pizza")
-    expect(member.district).to eq("1")
+    expect(member.state).to eq("Indiana")
   end
 end
 ```
@@ -217,17 +217,19 @@ Let's look at our Controller in it's current state:
 class SearchController < ApplicationController
   def index
     state = params[:state]
-
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+    response = conn.get("/v3/member?limit=250")
+    
     json = JSON.parse(response.body, symbolize_names: true)
-    @members = json[:results].map do |member_data|
-      Member.new(member_data)
+    members = json[:members].map do |member_data|
+      if member_data[:state] == state
+        Member.new(member_data)
+      end
     end
+    @members_by_state = members.compact
   end
 end
 ```
@@ -268,7 +270,7 @@ When we create Facades, we generally want to **instantiate** them (instead of us
 
 ### Back to Code...
 
-Our long term goal is to be able to send an Facade object to the view that will have a method called `members`, which will give us the members we need. Note that we’ve commented out all of the code in our controller that we are going to abstract away.
+Our long term goal is to be able to send an Facade object to the view that will have a method called `members_by_state`, which will give us the members we need. Note that we’ve commented out all of the code in our controller that we are going to abstract away.
 
 When we run the tests here, we will get an error saying that it doesn’t know anything about a SearchFacade, so we are going to make it. First we are going to make a directory, `app/facades`
 
@@ -280,7 +282,7 @@ class SearchFacade
     @state = state
   end
 
-  def members
+  def members_by_state
   end
 end
 ```
@@ -290,14 +292,13 @@ We’ve made some changes now, and since we are now sending a facade object to t
 *app/views/search/index.html.erb*
 
 ```ruby
-<h1><%= @facade.members.count %> Results </h1>
-<% @facade.members.each do |member| %>
+<h1><%= @facade.members_by_state.count %> Results</h1>
+<% @facade.members_by_state.each do |member| %>
   <ul class="member">
-  <li class="name"><%= member.name %></li>
-  <li class="role"><%= member.role %></li>
-  <li class="party"><%= member.party %></li>
-  <li class="district"><%= member.district %></li>
-</ul>
+    <li class="name"><%= member.name %></li>
+    <li class="party"><%= member.party %></li>
+    <li class="state"><%= member.state %></li>
+  </ul>
 <% end %>
 ```
 
@@ -315,31 +316,63 @@ class SearchFacade
     @state = state
   end
 
-  def members
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+  def members_by_state
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/congress/v1/members/house/#{@state}/current.json")
-
+    response = conn.get("/v3/member?limit=250")
+    
     json = JSON.parse(response.body, symbolize_names: true)
-    @members = json[:results].map do |member_data|
-      Member.new(member_data)
+    members = json[:members].map do |member_data|
+      if member_data[:state] == @state
+        Member.new(member_data)
+      end
     end
+    members.compact
   end
 end
 ```
 
-The big adaptation we are making here is that we aren’t setting the state that is coming in from the params to a local variable. That information is coming in when we instantiate the facade and stored in an instance variable, so when we run that GET request, we’re just going to interpolate. 
+The big adaptation we are making here is that we aren’t setting the state that is coming in from the params to a local variable. That information is coming in when we instantiate the facade and stored in an instance variable. 
 
 At this point, if we run our tests we’re all GREEN! ✅
 
 Our controller is now quite lightweight and is truly acting as that CEO. ✅
 
-We're not going to unit test our `SearchFacade` in this lesson, but you should absolutely do so. It is straight-forward to test this facade object, because all we have to do is instantiate it with a string as an argument, and its member method should just return us an array of Member objects, making testing very straightforward.
+To test our new facade, let's make a directory and file:
+
+```bash
+$ mkdir spec/facades
+$ touch spec/facades/search_facade_spec.rb
+```
+
+It is pretty straight-forward to test this facade object, because all we have to do is instantiate it with a string as an argument, and its member method should just return us an array of Member objects.
+
+```ruby
+require 'rails_helper'
+
+RSpec.describe SearchFacade do
+
+  it "exists and has a state attribute" do
+    facade = SearchFacade.new("Colorado")
+
+    expect(facade).to be_a(SearchFacade)
+    expect(facade.instance_variable_get(:@state)).to eq("Colorado")
+  end
+
+  it "returns an array of Member objects" do
+    facade = SearchFacade.new("Colorado")
+
+    expect(facade.members_by_state).to be_a(Array)
+    facade.members_by_state.each do |member|
+      expect(member).to be_a(Member)
+    end
+  end
+```
 
 <section class="call-to-action">
-On your own, take some time now to create a test for your newly-created SearchFacade class. Remember that it will be making at least one API call, so you should mock the API call using fixture files or VCR, and have your test prove that we can instantiate & call the methods in the facade. 
+Remember that it will be making at least one API call, so you should mock the API call using fixture files or VCR. 
 </section>
 
 
@@ -358,29 +391,34 @@ class SearchFacade
     @state = state
   end
 
-	def members
-    # conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-    #   faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+  def members_by_state
+    # conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+    #   faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     # end
 
-    # response = conn.get("/congress/v1/members/house/#{@state}/current.json")
-
+    # response = conn.get("/v3/member?limit=250")
+    
     # json = JSON.parse(response.body, symbolize_names: true)
 
     service = CongressService.new
 
-    json = service.members_by_state(@state)
+    json = service.members
     
-    @members = json[:results].map do |member_data|
-      Member.new(member_data)
+    members = json[:members].map do |member_data|
+      if member_data[:state] == @state
+        Member.new(member_data)
+      end
     end
+    members.compact
   end
 end
 ```
 
 We are making for ourselves a `CongressService` class, and its responsibility is that its going to give us the JSON that we need to make ourselves our Member objects. This service’s responsibility is going to purely focused around interacting with the API and getting us the information we need. It is convention that we call these objects services.
 
-It’s good practice to abstract the name of the API that we are working with so anything outside of this class has no idea of how we are getting this data. Notice that we are calling it `CongressService` instead of `PropublicaService`. This class used to use an API from the Sunlight Foundation. Had we named it `SunlightService`, when the change occurred, we had to change the class name and then hunt for every place that we had referred to it as `SunlightService` by calling it `CongressService` instead, if we have to change what API we are using, any changes only have to occur inside that service.
+It’s good practice to abstract the name of the API that we are working with so anything outside of this class has no idea of how we are getting this data. Notice that we are calling it `CongressService`. In the past, this class used to incorporate an API from the Sunlight Foundation, and another version of this lesson used a Propublica API. Had we named this service `SunlightService` or `PropublicaService`, when the change occurred, we would have had to change the name of this object and then hunt for every place that we had referred to it as `SunlightService`. 
+
+By calling it `CongressService` instead, if we have to change what API we are using, any changes only have to occur inside that service. (It's sort of a 'happy accident' that our API provider happens to have a very generic name, in this case.)
 
 At this point, if we run our tests it’s going to complain that it doesn’t know anything about our service, and so let’s make a new folder and add the service.
 
@@ -392,13 +430,13 @@ class CongressService
 end
 ```
 
-We dream drove ourselves to making this service have a `members_by_state` method, and so lets add that.
+We dream drove ourselves to making this service have a `members` method, and so lets add that.
 
 *app/services/congress_service.rb*
 
 ```ruby
 class CongressService
-  def members_by_state(state)
+  def members
   end
 end
 ```
@@ -409,69 +447,67 @@ And now let’s move the code we had previously implemented in our facade here i
 
 ```ruby
 class CongressService
-  def members_by_state(state)
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+  def members
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+    response = conn.get("/v3/member?limit=250")
+    
     JSON.parse(response.body, symbolize_names: true)
   end
 end
 ```
 
-We do have to make some changes to get this to work. We have to change `@state` to `state` as we are using the state that is passed to the method and no longer the instance variable that was stored in the facade.
-
-We also are not going to set the parsed JSON to a variable. Remember that the last line of the method is what gets returned, so no need to store it in a local variable either.
+Note that we are not going to set the parsed JSON to a variable. Remember that the last line of the method is what gets returned, so no need to store it in a local variable either.
 
 If we run our tests, everything is passing again! ✅
 
-It’s important to note that we did not move over the creation of the `Member` objects. The ONLY job of this service is to talk to the Propublica API. The formatting and massaging of the data is a different responsibility to what happens in the service - it is the job of the facade.
+It’s important to note that we did not move over the creation of the `Member` objects. The ONLY job of this service is to talk to the Congress API. The formatting and massaging of the data is a different responsibility to what happens in the service - it is the job of the facade.
 
 **Keep your service objects super simple. Hit an endpoint, and get the facade a response. That is IT.**
 
-Let's make one more refactor in our service. If we ever need to hit a different Propublica endpoint, for instance, to get members of the Senate, it would be nice if we could reuse that Faraday connection object. This object sets up the base url for the api and the api key, both things that will be consistent across API calls to Propublica, which makes it the perfect candidate to increase reusability. Since our members_of_house method is a class method, our `conn` method will also need to be a class method.
+Let's make one more refactor in our service. If we ever need to hit a different Congress API endpoint, for instance, to get members of the Senate, it would be nice if we could reuse that Faraday connection object. This object sets up the base url for the api and the api key, both things that will be consistent across API calls to Propublica, which makes it the perfect candidate to increase reusability. Since our members_of_house method is a class method, our `conn` method will also need to be a class method.
 
 *app/services/congress_service.rb*
 
 ```ruby
 class CongressService
-  def members_by_state(state)
-    response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+  def members
+    response = conn.get("/v3/member?limit=250")
+    
     JSON.parse(response.body, symbolize_names: true)
   end
 
   def conn
-    Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+    Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
   end
 end
 ```
 
-This is great, but our `member_by_state` is still doing too much, and we can pull out some more to make more code reusable even further.
+This is great, but our `members` is still doing too much, and we can pull out some more to make more code reusable even further.
 
 *app/services/congress_service.rb*
 
 ```ruby
 class CongressService
-  def members_by_state(state)
-    get_url("/congress/v1/members/house/#{state}/current.json")
+  def members
+    get_url("/v3/member?limit=250")
   end
-
+  
   def get_url(url)
     response = conn.get(url)
     JSON.parse(response.body, symbolize_names: true)
   end
 
   def conn
-    Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+    Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
   end
-end 
+end
 ```
 
 We should probably write a unit test for our service.
