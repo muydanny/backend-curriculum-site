@@ -27,7 +27,7 @@ Slides are available [here](https://github.com/turingschool/backend-curriculum-s
 
 [📺 Here is a walkthrough video to help you set up your Rails Application Credentials.](https://drive.google.com/file/d/1Cy598b1W1d7nZ-gv6ur_gPmAGOmaD3Gi/view?usp=sharing)
 
-- [Request a Propublica API Key](https://www.propublica.org/datastore/api/propublica-congress-api)
+- [Request a Congress.gov API Key](https://api.congress.gov/sign-up/)
 - Clone [the House Salad 7](https://github.com/turingschool-examples/house-salad-7/tree/testing-setup) 
   - (forking is optional since we won't ask you to push up any changes)
 - In the `testing-setup` branch, run setup steps:
@@ -39,10 +39,10 @@ rails db:{create, migrate}
   - If the following steps don't work, you'll need to follow [these 'Launching From the Command Line' steps](https://code.visualstudio.com/docs/setup/mac#:~:text=Keep%20in%20Dock.-,Launching%20from%20the%20command%20line,code) to configure the command
 - Generate what is called a 'master key' by running `EDITOR="code --wait" rails credentials:edit` in the command line
   - This will create a new key in `config/master.key` and a temporary YAML file which will open in your text editor.
-- Add your Propublica API Key to the opened file
+- Add your Congress API Key to the opened file
 
 ```
-propublica:
+congress:
   key: asdsa3498serghjirteg978ertertwhter
 
 # Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
@@ -75,7 +75,8 @@ Add in a new form to search for Senators:
   <%= form.submit 'Search' %>
 <% end %>
 <% if @member %>
-    <h5>Senator <%= @member[:first_name].concat(" ").concat(@member[:last_name]) %> was found! Their twitter is: <%= @member[:twitter_account] %></h5>
+    <h5><%= @member[:name] %> was found!</h5>
+    <p><%= image_tag @member[:depiction][:imageUrl] %></p>
 <% end %>
 ```
 
@@ -85,26 +86,29 @@ And let’s add a search method for our search controller:
 
 ```ruby
 def search
-    conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-      faraday.headers["X-API-KEY"] = Rails.application.credentials.propublica[:key]
-    end
-    response = conn.get("/congress/v1/116/senate/members.json")
-
-    data = JSON.parse(response.body, symbolize_names: true)
-
-    members = data[:results][0][:members]
-
-    found_members = members.find_all {|m| m[:last_name] == params[:search]}
-    @member = found_members.first
-    render "welcome/index"
+  conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+    faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
   end
+  
+  response = conn.get("/v3/member?limit=250")
+
+  data = JSON.parse(response.body, symbolize_names: true)
+
+  members = data[:members]
+
+  found_senators = members.find_all do |member| 
+    senator = (member[:terms][:item][0][:chamber] == "Senate")
+    last_name = member[:name].split(' ')[0].gsub(',', '')
+    last_name == params[:search] && senator
+  end
+  @member = found_senators.first
+  render "welcome/index"
+end
 ```
 
 For simplicity’s sake we aren’t going to use the refactored pattern, we are just going to leave all of the code in your controller.
 
 You can test this code is working correctly in the browser if you can find a Senator by last name. `@member` will be a hash of that Senator’s data.
-
-Note: In order to future proof this lesson, this API is calling to get the results only for the 116th session of Congress, so you will likely not get good results searching for a Senator. For example, it will find a result if you search for say Sanders or Booker, but not Fetterman.
 
 When it exists, we will grab some data from `@member` and display it on the welcome page We can test this functionality by adding a test called: `user_can_search_by_senator_last_name_spec.rb` 
 
@@ -124,8 +128,8 @@ RSpec.describe 'Senator Search' do
       click_button 'Search'
 
       expect(page.status_code).to eq 200
-      expect(page).to have_content("Senator Bernard Sanders was found!")
-      expect(page).to have_content("SenSanders")
+      expect(page).to have_content('Sanders, Bernard was found!')
+      expect(page.find('.senator-image')['src']).to have_content('https://www.congress.gov/img/member/s000033_200.jpg')
     end
   end
 end
@@ -135,7 +139,7 @@ end
 
 ## Mocking Network Requests
 
-The [setup branch](https://github.com/turingschool-examples/house-salad-7/tree/testing-setup) for this class has implemented a test to ensure that we are able to hit our API and display some data from the response. However, our test is actually hitting the Propublica API every time it runs. There are many reasons we wouldn't want to do this:
+The [setup branch](https://github.com/turingschool-examples/house-salad-7/tree/testing-setup) for this class has implemented a test to ensure that we are able to hit our API and display some data from the response. However, our test is actually hitting the Congress API every time it runs. There are many reasons we wouldn't want to do this:
 
 1. We could hit API rate limits much faster.
 2. Our test suite will be slower.
@@ -163,23 +167,23 @@ $ bundle exec rspec spec/features/user_can_search_by_senator_last_name_spec.rb
 Now we will se a big ol’ error message:
 
 ```bash
-Failure/Error: response = conn.get(url)
-
+     Failure/Error: response = conn.get("/v3/member?limit=250")
+     
      WebMock::NetConnectNotAllowedError:
-       Real HTTP connections are disabled. Unregistered request: GET https://api.propublica.org/congress/v1/members/house/CO/current.json with headers {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v2.7.4', 'X-Api-Key'=>'S9JON3ruNOI6XiyymcnZ7gtsjnToPxuXyT0bgeaX'}
-
+       Real HTTP connections are disabled. Unregistered request: GET https://api.congress.gov/v3/member?limit=250 with headers {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v2.9.0', 'X-Api-Key'=>'c8A5PNW7BC1ccEdzMVK0s5WZcJtZsFTUEaRVD3Up'}
+     
        You can stub this request with the following snippet:
-
-       stub_request(:get, "https://api.propublica.org/congress/v1/members/house/CO/current.json").
+     
+       stub_request(:get, "https://api.congress.gov/v3/member?limit=250").
          with(
            headers: {
        	  'Accept'=>'*/*',
        	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-       	  'User-Agent'=>'Faraday v2.7.4',
-       	  'X-Api-Key'=>'S9JON3ruNOI6XiyymcnZ7gtsjnToPxuXyT0bgeaX'
+       	  'User-Agent'=>'Faraday v2.9.0',
+       	  'X-Api-Key'=>'c8A5PNW7BC1ccEdzMVK0s5WZcJtZsFTUEaRVD3Up'
            }).
          to_return(status: 200, body: "", headers: {})
-
+     
        ============================================================
 ```
 
@@ -196,18 +200,18 @@ require 'rails_helper'
 
 RSpec.describe 'Senator Search' do
   describe 'happy path' do
-    
+
     it 'allows user to search for Senators by last name' do
-      stub_request(:get, "https://api.propublica.org/congress/v1/116/senate/members.json").
-        to_return(status: 200, body: "")
+      stub_request(:get, "https://api.congress.gov/v3/member?limit=250").to_return(status: 200, body: '')
+
       visit root_path
 
       fill_in :search, with: 'Sanders'
       click_button 'Search'
 
       expect(page.status_code).to eq 200
-      expect(page).to have_content("Senator Bernard Sanders was found!")
-      expect(page).to have_content("SenSanders")
+      expect(page).to have_content('Sanders, Bernard was found!')
+      expect(page.find('.senator-image')['src']).to have_content('https://www.congress.gov/img/member/s000033_200.jpg')
     end
   end
 end
@@ -223,8 +227,8 @@ Now, when we run the test, we get a new error.
 
      JSON::ParserError:
        unexpected token at ''
-     # ./app/controllers/search_controller.rb:12:in `search'
-     # ./spec/features/user_can_search_by_senator_last_name_spec.rb:12:in `block (3 levels) in <top (required)>'
+     # ./app/controllers/search_controller.rb:26:in `search'
+     # ./spec/features/user_can_search_by_senator_last_name_spec.rb:11:in `block (3 levels) in <top (required)>'
 ```
 
 If we look at the stub we just put in the test, we are returning an empty body, so it makes sense that we're getting an error when trying to parse the response body as JSON.
@@ -240,24 +244,23 @@ And then we have to update our test to use this fixture file:
 
 *spec/features/user_can_search_by_senator_last_name_spec.rb*
 
-```bash
+```ruby
 require 'rails_helper'
 
 RSpec.describe 'Senator Search' do
   describe 'happy path' do
-    
     it 'allows user to search for Senators by last name' do
       json_response = File.read('spec/fixtures/members_of_the_senate.json')
-      stub_request(:get, "https://api.propublica.org/congress/v1/116/senate/members.json").
-        to_return(status: 200, body: json_response)
+      stub_request(:get, "https://api.congress.gov/v3/member?limit=250").to_return(status: 200, body: json_response)
+
       visit root_path
 
       fill_in :search, with: 'Sanders'
       click_button 'Search'
 
       expect(page.status_code).to eq 200
-      expect(page).to have_content("Senator Bernard Sanders was found!")
-      expect(page).to have_content("SenSanders")
+      expect(page).to have_content('Sanders, Bernard was found!')
+      expect(page.find('.senator-image')['src']).to have_content('https://www.congress.gov/img/member/s000033_200.jpg')
     end
   end
 end
@@ -305,7 +308,7 @@ You’re going to see a big error, but the important part is:
      #
      #   ================================================================================
      #   An HTTP request has been made that VCR does not know how to handle:
-     #     GET https://api.propublica.org/congress/v1/members/house/CO/current.json
+     #      GET https://api.congress.gov/v3/member?limit=250
 ```
 
 This means that it’s working. 
@@ -319,32 +322,28 @@ In order to use VCR, we wrap our test in a `VCR.use_cassette` block:
 ```ruby
 require 'rails_helper'
 
-feature "user can search for house members" do
+feature "user can search for members" do
+
   scenario "user submits valid state name" do
     # As a user
     # When I visit "/"
-    VCR.use_cassette("propublica_members_of_the_senate_for_CO") do
+    VCR.use_cassette("congress_api_representatives") do
       visit '/'
 
       select "Colorado", from: :state
       # And I select "Colorado" from the dropdown
-      click_on "Locate Members of the House"
-      # And I click on "Locate Members from the House"
+      click_on "Locate Representatives"
+      # And I click on "Locate Representatives"
       expect(current_path).to eq(search_path)
-      # Then my path should be "/search" with "state=CO" in the parameters
-      expect(page).to have_content("8 Results")
-      # And I should see a message "8 Results"
-      expect(page).to have_css(".member", count: 8)
-      # And I should see a list of 8 the members of the house for Colorado
+      # I should see a list the members for Colorado
 
       within(first(".member")) do
         expect(page).to have_css(".name")
-        expect(page).to have_css(".role")
         expect(page).to have_css(".party")
-        expect(page).to have_css(".district")
+        expect(page).to have_css(".state")
       end
     end
-    # And I should see a name, role, party, and district for each member
+    # And I should see a name, role, party, and state for each member
   end
 end
 ```
@@ -363,7 +362,7 @@ If you look closely in that `.yml` file you can see our API key in there. We wi
 VCR.configure do |config|
   config.cassette_library_dir = "spec/fixtures/vcr_cassettes"
   config.hook_into :webmock
-  config.filter_sensitive_data('<PROPUBLICA_API_KEY>') { Rails.application.credentials.propublica[:key] }
+  config.filter_sensitive_data('<CONGRESS_API_KEY>') { Rails.application.credentials.congress[:key] }
 end
 ```
 
@@ -399,7 +398,8 @@ Now in our tests, we can delete the `VCR.use_cassette` block and tell the test 
 ```ruby
 require 'rails_helper'
 
-feature "user can search for house members" do
+feature "user can search for members" do
+
   scenario "user submits valid state name", :vcr do
     # As a user
     # When I visit "/"
@@ -407,23 +407,18 @@ feature "user can search for house members" do
 
     select "Colorado", from: :state
     # And I select "Colorado" from the dropdown
-    click_on "Locate Members of the House"
-    # And I click on "Locate Members from the House"
+    click_on "Locate Representatives"
+    # And I click on "Locate Representatives"
     expect(current_path).to eq(search_path)
-    # Then my path should be "/search" with "state=CO" in the parameters
-    expect(page).to have_content("8 Results")
-    # And I should see a message "8 Results"
-    expect(page).to have_css(".member", count: 8)
-    # And I should see a list of 8 the members of the house for Colorado
+    # I should see a list the members for Colorado
 
     within(first(".member")) do
       expect(page).to have_css(".name")
-      expect(page).to have_css(".role")
       expect(page).to have_css(".party")
-      expect(page).to have_css(".district")
+      expect(page).to have_css(".state")
     end
-    # And I should see a name, role, party, and district for each member
   end
+    # And I should see a name, role, party, and state for each member
 end
 ```
 
