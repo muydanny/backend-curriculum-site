@@ -11,7 +11,7 @@ We will start with the house-salad-7 app's [`api-consumption-complete` branch](h
 Instructions on using Rails Encrypted Credentials can be found [here](./rails_encrypted_credentials.md).  
 
 <section class="call-to-action">
-NOTE: This lesson assumes that Rails Encrypted Credentials have already been set up with a `congress[:key]` ready to go. If you haven't already done so, get a Propublica API Key [here](https://api.congress.gov/sign-up/). 
+NOTE: This lesson assumes that Rails Encrypted Credentials have already been set up with a `congress[:key]` ready to go. If you haven't already done so, get a Congress API Key [here](https://api.congress.gov/sign-up/). 
 </section>
 
 ## Learning Goals
@@ -244,17 +244,19 @@ Let's do a little bit of declarative programming and write code that represents 
 class SearchController < ApplicationController
   def index
     @facade = SearchFacade.new(params[:state])
-    # state = params[:state]
-
-    # conn = Faraday.new(url: "https://api.propublica.org") do |faraday|
-    #   faraday.headers["X-API-Key"] = Rails.application.credentials.propublica[:key]
+    state = params[:state]
+    # conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+    #   faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     # end
 
-    # response = conn.get("/congress/v1/members/house/#{state}/current.json")
-
+    # response = conn.get("/v3/member?limit=250")
+    
     # json = JSON.parse(response.body, symbolize_names: true)
-    # @members = json[:results].map do |member_data|
-    #   Member.new(member_data)
+    # @members_by_state = []
+    # json[:members].each do |member_data|
+    #   if member_data[:state] == state
+    #     @members_by_state << member_data
+    #   end
     # end
   end
 end
@@ -467,7 +469,7 @@ It’s important to note that we did not move over the creation of the `Member` 
 
 **Keep your service objects super simple. Hit an endpoint, and get the facade a response. That is IT.**
 
-Let's make one more refactor in our service. If we ever need to hit a different Congress API endpoint, for instance, to get members of the Senate, it would be nice if we could reuse that Faraday connection object. This object sets up the base url for the api and the api key, both things that will be consistent across API calls to Propublica, which makes it the perfect candidate to increase reusability. Since our members_of_house method is a class method, our `conn` method will also need to be a class method.
+Let's make one more refactor in our service. If we ever need to hit a different Congress API endpoint, for instance, to get members of the Senate, it would be nice if we could reuse that Faraday connection object. This object sets up the base url for the api and the api key, both things that will be consistent across API calls to the Congress API, which makes it the perfect candidate to increase reusability. Since our members_of_house method is a class method, our `conn` method will also need to be a class method.
 
 *app/services/congress_service.rb*
 
