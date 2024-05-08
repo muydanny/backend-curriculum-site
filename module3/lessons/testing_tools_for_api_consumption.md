@@ -354,7 +354,7 @@ Run your tests and they should be passing. If you look under `spec/fixtures/vcr
 
 ## Filtering Sensitive Data
 
-If you look closely in that `.yml` file you can see our API key in there. We will be pushing these cassettes to GitHub, so we don't want the actual API key to be recorded for the same reasons we don't want our `application.yml` file pushed and we don't want to hardcode the API key in our code. We will use a VCR option to replace the actual API key with a placeholder. Open up your `rails_helper.rb` and add another line to the VCR configuration:
+If you look closely in that `.yml` file you can see our API key in there. We will be pushing these cassettes to GitHub, so we don't want the actual API key to be recorded for the same reasons we don't want to hardcode the API key in our code. We will use a VCR option to replace the actual API key with a placeholder. Open up your `rails_helper.rb` and add another line to the VCR configuration:
 
 *spec/rails_helper.rb*
 
