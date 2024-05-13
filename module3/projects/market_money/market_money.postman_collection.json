@@ -265,7 +265,7 @@
 							"",
 							"    // test values",
 							"    pm.expect(payload.data.type).to.eq(\"vendor\")",
-							"    pm.expect(payload.data.id).to.eq(pm.globals.get('first_vendor_id').toString())",
+							"    pm.expect(payload.data.id).to.eq(pm.globals.get('vendor_id').toString())",
 							"    pm.expect(payload.data.attributes.name).to.eq(pm.globals.get('vendor_name'))",
 							"    pm.expect(payload.data.attributes.description).to.eq(pm.globals.get('vendor_description'))",
 							"    pm.expect(payload.data.attributes.contact_name).to.eq(pm.globals.get('vendor_contact_name'))",
