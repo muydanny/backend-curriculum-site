@@ -9,7 +9,7 @@ layout: page
 
 * Understand how to read a stack trace
 * Understand common error messages
-* Understand how to use pry to create breakpoints in code to help verify assumptions
+* Understand how to use `pry` to create breakpoints in code to help verify assumptions
 * Develop a debugging process
 
 ## Tools & Repositories
