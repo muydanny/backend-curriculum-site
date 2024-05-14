@@ -16,6 +16,17 @@ _[Back to Project Home](./index)_
 
 <br>
 
+### Presentation Guidelines
+
+Each student will have a live evaluation with an instructor, and should come prepared to do the following:
+* Demonstrate how the game works by running it in the terminal (note: if you don't complete Iteration 3, you can skip this demo)
+* Run your tests and identify one test case you're proud of, and one test case you'd like feedback on
+* At a high level (i.e. *don't* just read your code line by line) discuss your strategy for implementing one of the more complex methods, such as determining the winner of a Turn, awarding the spoils of war, etc.
+* Give a brief overview of how you used your runner.rb file to set up the game play
+* Identify an area you would refactor if you had more time
+* Ask any remaining questions about the project or their solution
+ <br>
+
 <br> | **Exceptional** | **Meets Expectations** | **Below Expectations** | **Well Below Expectations**
 -- | --- | --- | --- | ---
 **Functionality** | Application is robust and can handle a variety of inputs including invalid inputs and completes iteration 4 | Application adheres to the flow outlined in the specification and can handle a variety of valid inputs (not just what is outlined in spec). Iteration 3 is complete. | Only up to Iteration 2 is complete or the application does not follow the flow outlined in the specification. | Iteration 2 is not complete. |
