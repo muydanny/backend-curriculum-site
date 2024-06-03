@@ -23,6 +23,8 @@ Your group should research different methodologies and tools for project organiz
 
 ### Code Design
 
+The following tools are helpful for collaborative design: [Miro](https://miro.com/), [Figma](https://www.figma.com/), and [Draw.io](https://app.diagrams.net/).
+
 There are a few things to consider when deciding how you want to organization your code:
 
 * What classes do you need?
