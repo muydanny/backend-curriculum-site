@@ -202,6 +202,10 @@ Try visiting `localhost:4567/force_an_error` in your browser, and experiment wit
 In the future, we **highly** recommend a TDD approach. For now, let's at least add some tests for everything we built today. 
 
 ```
+gem install rack-test
+```
+
+```
 touch server_test.rb
 ```
 
