@@ -11,8 +11,8 @@ The following projects will be assigned and their completion is required to be p
 * Week 1-2 (Solo): [War or Peace](./war_or_peace/)
 * Week 2-3 (Solo): [The DMV](./dmv/)
 * Week 3-4 (Paired): [Battleship](./battleship/)
-* Week 5-6 (Group Final)
-
+* Week 5-6 (Group Final): [Futbol](./futbol_pd/)
+  
 ## Extension Projects
 
 The following projects are not required. Students can use these projects as an opportunity to explore concepts not covered in module 1.
