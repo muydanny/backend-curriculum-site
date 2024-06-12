@@ -43,6 +43,7 @@ Because we're getting information about Congress and the House of Representative
 ```bash
 $ git clone https://github.com/turingschool-examples/house-salad-7
 $ cd house-salad-7
+$ bundle install
 ```
 
 ```bash
