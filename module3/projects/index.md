@@ -11,3 +11,4 @@ title: Module 3 - Projects
 
 ### Resources
 - [PR Template](./pr_template)
+- [Career Journal Reflection Questions](./career_journal)
