@@ -21,8 +21,8 @@ Our "Front End" application will be built in Rails.
       - eg, if you OAuth with Google, what can we use their OAuth token to do on their behalf at Google?
   - This application is only allowed to store user data in a local database (although you can choose to store user data on the backend instead)
     - This app's database can only have a "users" table
-    - All other database storage must go through a "DatabaseService" that you implement to do any CRUD behavior on your Backend
-      - This will follow the typical Facade and Service design patterns
+    - All other database storage must be done in your backend service, which can expose API endpoints to CRUD database resources.
+      - The application should refactor the API consumption to abstract and encapsulate network calls (i.e. using a service, POROs, and maybe a facade or another abstraction layer) 
       - You will need HEAVY use of webmock to test expected results until the backend endpoints are finished. Planning the structure of your JSON ahead of time will go a long way in allowing both applications to proceed in a decoupled manner asynchronously
       - Once the backend endpoints are finished, consider changing to VCR
   - Extension: using caching to cache responses retrieved from the backend application
