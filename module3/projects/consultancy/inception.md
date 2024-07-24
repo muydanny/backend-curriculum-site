@@ -117,3 +117,14 @@ Conflict and tension tends to arise in groups when there are differing expectati
             3. Route for login page is /login
             4. User should be redirected to /dashboard after successful login
             5. If user is not able to authenticate with google, user should see flash message that reads `Oops something went wrong!`
+
+
+## Equity Analysis
+
+As technologists, it's essential to analyze product plans and processes in order to reduce harm to users, and particularly marginalized identity groups. As part of your inception, please answer these questions as a group, and share your responses with your project manager. 
+
+* What features or tools do you plan to build into the project (or would you include if you had more time) to promote inclusion. You may have ideas that are out of scope for your MVP, but those are valuable to share here!
+* Are any of the following marginalized identity groups (or others) likely to experience harm or exclusion as a result of this project:  immigrants, people of color, people with (dis)/Abilities, justice impacted (formerly incarcerated) people, elderly people, women, gender expansive people, people with limited incomes, etc.
+* Which factors may impact any individual or group’s access to the proposed project?
+* If you were given more time to design this product, how would you want to work with your intended users to ensure relevance?
+* What happens if someone uses this product with bad/evil intent in mind?
