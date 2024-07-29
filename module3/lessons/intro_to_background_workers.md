@@ -22,7 +22,8 @@ How do you identify areas of the application that can benefit from a background 
 - Data Processing - e.g. generating thumbnails or resizing images
 - 3rd Party APIs - interacting with a service outside of your site
 - Maintenance - expiring old sessions, sweeping caches
-- Email - a request that causes an email to be sent
+- Email/Text Services - a request that causes an email or SMS to be sent
+- Scheduling a task - e.g. daily reminders, clearing data after a time period
 
 Applications with good Object Oriented design make it easy to queue background jobs, while poor OO makes it hard to extract jobs since responsibilities tend to overlap.
 
