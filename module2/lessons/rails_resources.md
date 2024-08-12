@@ -182,7 +182,7 @@ Refactor some of the code in setlist to use Route Helpers rather than hardcoded 
 
 ## Checks for Understanding
 
-- What are the 8 ReSTful routes and their controller/actions?
+- What are the 7 ReSTful routes and their controller/actions?
 - What routes would `resources :dogs, only: [:destroy, :index]` generate?
 - What routes would the following generate?
 

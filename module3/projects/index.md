@@ -3,10 +3,10 @@ layout: page
 title: Module 3 - Projects
 ---
 
-* [Viewing Party Solo](./viewing_party_solo) - solo project, week 1
-* [Rails Engine Lite](./rails_engine_lite) - paired project, week 2
-* [Consultancy Project](./consultancy) - group project, weeks 4 and 5
-* [Sweater Weather](./sweater_weather) - solo project, week 6
+* Week 1: [Viewing Party Solo](./viewing_party_solo) - solo project
+* Week 2: TBD<!-- * [Rails Engine Lite](./rails_engine_lite) - paired project-->
+* Week 4 & 5: * [Consultancy Project](./consultancy) - group project
+* Week 6: TBD<!-- * [Sweater Weather](./sweater_weather) - solo project -->
 
 
 ### Resources
