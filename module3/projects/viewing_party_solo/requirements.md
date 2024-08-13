@@ -26,7 +26,8 @@ Wireframes found [here](./wireframes) can be used as an additional reference for
 
 ---
 
-## Project Specs
+## Project Specs 
+(click on each heading)
 
 <details><summary><h3>1. Discover Movies: Search by Title</h3></summary>
 ```
