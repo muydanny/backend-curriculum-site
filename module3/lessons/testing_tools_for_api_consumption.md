@@ -72,11 +72,13 @@ Add in a new form to search for Senators:
 <%= form_with url: search_path, local: true do |form| %>
   <%= form.label :search, 'Search For Senators By Last Name:' %>
   <%= form.text_field :search %>
+  <%= form.label :state, "State Abbreviation:" %>
+  <%= form.text_field :state %>
   <%= form.submit 'Search' %>
 <% end %>
 <% if @member %>
     <h5><%= @member[:name] %> was found!</h5>
-    <p><%= image_tag @member[:depiction][:imageUrl] %></p>
+    <p><%= image_tag @member[:depiction][:imageUrl], class: 'senator-image' %></p>
 <% end %>
 ```
 
@@ -85,28 +87,34 @@ And let’s add a search method for our search controller:
 *app/controllers/search_controller.rb*
 
 ```ruby
-def search
-  conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
-    faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
-  end
+  def search
+    state = params[:state]
+    conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
+      faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
+    end
+    # require 'pry'; binding.pry
+    response = conn.get("/v3/member/#{state}?limit=500")
+
+    data = JSON.parse(response.body, symbolize_names: true)
+
+    members = data[:members]
+    found_senators = members.find_all do |member| 
+      # if a member has served on the Senate, this will be represented by the last (or only) element
+        # in the member[:terms][:item] array
+      senator = (member[:terms][:item][-1][:chamber] == "Senate")
+
+      # manipulate string to only look at last name
+      last_name = member[:name].split(' ')[0].gsub(',', '')
+      # keep if: the last name matches our query, and the member is a senator
+      last_name == params[:search] && senator
+    end
   
-  response = conn.get("/v3/member?limit=250")
-
-  data = JSON.parse(response.body, symbolize_names: true)
-
-  members = data[:members]
-
-  found_senators = members.find_all do |member| 
-    senator = (member[:terms][:item][0][:chamber] == "Senate")
-    last_name = member[:name].split(' ')[0].gsub(',', '')
-    last_name == params[:search] && senator
+    @member = found_senators.first
+    render "welcome/index"
   end
-  @member = found_senators.first
-  render "welcome/index"
-end
 ```
 
-For simplicity’s sake we aren’t going to use the refactored pattern, we are just going to leave all of the code in your controller.
+For simplicity’s sake we aren’t going to use the refactored pattern, we are just going to leave all of the code in your controller. This leaves the controller action pretty bloated, but cleaning this up will be part of a different lesson! For now, just focus on understanding the logic. 
 
 You can test this code is working correctly in the browser if you can find a Senator by last name. `@member` will be a hash of that Senator’s data.
 
@@ -125,6 +133,7 @@ RSpec.describe 'Senator Search' do
       visit root_path
 
       fill_in :search, with: 'Sanders'
+      fill_in :state, with: "VT"
       click_button 'Search'
 
       expect(page.status_code).to eq 200
@@ -170,11 +179,11 @@ Now we will se a big ol’ error message:
      Failure/Error: response = conn.get("/v3/member?limit=250")
      
      WebMock::NetConnectNotAllowedError:
-       Real HTTP connections are disabled. Unregistered request: GET https://api.congress.gov/v3/member?limit=250 with headers {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v2.9.0', 'X-Api-Key'=>'c8A5PNW7BC1ccEdzMVK0s5WZcJtZsFTUEaRVD3Up'}
+       Real HTTP connections are disabled. Unregistered request: GET https://api.congress.gov/v3/member/VT?limit=250 with headers {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Faraday v2.9.0', 'X-Api-Key'=>'c8A5PNW7BC1ccEdzMVK0s5WZcJtZsFTUEaRVD3Up'}
      
        You can stub this request with the following snippet:
      
-       stub_request(:get, "https://api.congress.gov/v3/member?limit=250").
+       stub_request(:get, "https://api.congress.gov/v3/member/VT?limit=250").
          with(
            headers: {
        	  'Accept'=>'*/*',
@@ -207,6 +216,7 @@ RSpec.describe 'Senator Search' do
       visit root_path
 
       fill_in :search, with: 'Sanders'
+      fill_in :state, with: "VT"
       click_button 'Search'
 
       expect(page.status_code).to eq 200
@@ -251,11 +261,12 @@ RSpec.describe 'Senator Search' do
   describe 'happy path' do
     it 'allows user to search for Senators by last name' do
       json_response = File.read('spec/fixtures/members_of_the_senate.json')
-      stub_request(:get, "https://api.congress.gov/v3/member?limit=250").to_return(status: 200, body: json_response)
+      stub_request(:get, "https://api.congress.gov/v3/member/VT?limit=250").to_return(status: 200, body: json_response)
 
       visit root_path
 
       fill_in :search, with: 'Sanders'
+      fill_in :state, with: "VT"
       click_button 'Search'
 
       expect(page.status_code).to eq 200
@@ -308,7 +319,7 @@ You’re going to see a big error, but the important part is:
      #
      #   ================================================================================
      #   An HTTP request has been made that VCR does not know how to handle:
-     #      GET https://api.congress.gov/v3/member?limit=250
+     #      GET https://api.congress.gov/v3/member/VT?limit=250
 ```
 
 This means that it’s working. 
@@ -330,7 +341,7 @@ feature "user can search for members" do
     VCR.use_cassette("congress_api_representatives") do
       visit '/'
 
-      select "Colorado", from: :state
+      select "CO", from: :state
       # And I select "Colorado" from the dropdown
       click_on "Locate Representatives"
       # And I click on "Locate Representatives"
@@ -405,7 +416,7 @@ feature "user can search for members" do
     # When I visit "/"
     visit '/'
 
-    select "Colorado", from: :state
+    select "CO", from: :state
     # And I select "Colorado" from the dropdown
     click_on "Locate Representatives"
     # And I click on "Locate Representatives"
