@@ -4,7 +4,7 @@ title: Viewing Party Solo - Evaluation
 ---
 _[Back to Project Home](./index)_
 
-The 'eval' for this project is going to be a bit different than other projects in the past. First, you should score yourself for this project. To do that, please fill out and submit [this form](#) individually. 
+The 'eval' for this project is going to be a bit different than other projects in the past. First, you should score yourself for this project. To do that, please fill out and submit [this form](https://forms.gle/s3sg4Qruq7yHLRr37) individually. This form is also found in the calendar event. 
 
 ## Feedback Session Format
 
