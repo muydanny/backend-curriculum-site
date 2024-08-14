@@ -66,15 +66,10 @@ class SearchController < ApplicationController
       faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/v3/member?limit=250")
-    
+    response = conn.get("/v3/member/#{state}?limit=250")
+
     json = JSON.parse(response.body, symbolize_names: true)
-    @members_by_state = []
-    json[:members].each do |member_data|
-      if member_data[:state] == state
-        @members_by_state << member_data
-      end
-    end
+    @members_by_state = json[:members]
   end
 end
 ```
@@ -110,15 +105,12 @@ class SearchController < ApplicationController
       faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/v3/member?limit=250")
-    
+    response = conn.get("/v3/member/#{state}?limit=250")
+
     json = JSON.parse(response.body, symbolize_names: true)
-    members = json[:members].map do |member_data|
-      if member_data[:state] == state
+    @members_by_state = json[:members].map do |member_data|
         Member.new(member_data)
-      end
     end
-    @members_by_state = members.compact
   end
 end
 ```
@@ -221,15 +213,12 @@ class SearchController < ApplicationController
       faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/v3/member?limit=250")
-    
+    response = conn.get("/v3/member/#{state}?limit=250")
+
     json = JSON.parse(response.body, symbolize_names: true)
-    members = json[:members].map do |member_data|
-      if member_data[:state] == state
+    @members_by_state = json[:members].map do |member_data|
         Member.new(member_data)
-      end
     end
-    @members_by_state = members.compact
   end
 end
 ```
@@ -245,19 +234,17 @@ class SearchController < ApplicationController
   def index
     @facade = SearchFacade.new(params[:state])
     state = params[:state]
+
     # conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
-    #   faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
+    #  faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     # end
 
-    # response = conn.get("/v3/member?limit=250")
-    
+    # response = conn.get("/v3/member/#{state}?limit=250")
+
     # json = JSON.parse(response.body, symbolize_names: true)
-    # @members_by_state = []
-    # json[:members].each do |member_data|
-    #   if member_data[:state] == state
-    #     @members_by_state << member_data
-    #   end
-    # end
+    # @members_by_state = json[:members].map do |member_data|
+    #     Member.new(member_data)
+    end
   end
 end
 ```
@@ -323,15 +310,12 @@ class SearchFacade
       faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/v3/member?limit=250")
+    response = conn.get("/v3/member/#{@state}?limit=250")
     
     json = JSON.parse(response.body, symbolize_names: true)
     members = json[:members].map do |member_data|
-      if member_data[:state] == @state
-        Member.new(member_data)
-      end
+      Member.new(member_data)
     end
-    members.compact
   end
 end
 ```
@@ -357,14 +341,14 @@ require 'rails_helper'
 RSpec.describe SearchFacade do
 
   it "exists and has a state attribute" do
-    facade = SearchFacade.new("Colorado")
+    facade = SearchFacade.new("CO")
 
     expect(facade).to be_a(SearchFacade)
     expect(facade.instance_variable_get(:@state)).to eq("Colorado")
   end
 
   it "returns an array of Member objects" do
-    facade = SearchFacade.new("Colorado")
+    facade = SearchFacade.new("CO")
 
     expect(facade.members_by_state).to be_a(Array)
     facade.members_by_state.each do |member|
@@ -398,20 +382,17 @@ class SearchFacade
     #   faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     # end
 
-    # response = conn.get("/v3/member?limit=250")
+    # response = conn.get("/v3/member/#{@state}?limit=250")
     
     # json = JSON.parse(response.body, symbolize_names: true)
 
     service = CongressService.new
 
-    json = service.members
+    json = service.members(@state)
     
     members = json[:members].map do |member_data|
-      if member_data[:state] == @state
-        Member.new(member_data)
-      end
+      Member.new(member_data)
     end
-    members.compact
   end
 end
 ```
@@ -449,12 +430,12 @@ And now let’s move the code we had previously implemented in our facade here i
 
 ```ruby
 class CongressService
-  def members
+  def members(state)
     conn = Faraday.new(url: "https://api.congress.gov") do |faraday|
       faraday.headers["X-API-Key"] = Rails.application.credentials.congress[:key]
     end
 
-    response = conn.get("/v3/member?limit=250")
+    response = conn.get("/v3/member/#{state}?limit=250")
     
     JSON.parse(response.body, symbolize_names: true)
   end
@@ -475,8 +456,8 @@ Let's make one more refactor in our service. If we ever need to hit a different 
 
 ```ruby
 class CongressService
-  def members
-    response = conn.get("/v3/member?limit=250")
+  def members(state)
+    response = conn.get("/v3/member/#{state}?limit=250")
     
     JSON.parse(response.body, symbolize_names: true)
   end
@@ -495,8 +476,8 @@ This is great, but our `members` is still doing too much, and we can pull out so
 
 ```ruby
 class CongressService
-  def members
-    get_url("/v3/member?limit=250")
+  def members(state)
+    get_url("/v3/member/#{state}?limit=250")
   end
   
   def get_url(url)
