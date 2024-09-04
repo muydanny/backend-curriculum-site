@@ -9,8 +9,8 @@ We will be using an Agile process during the development of this project. This w
 
 * Working in short 3 or 4 day "Sprints"
 * Using GitHub
-* Setting up Continuous Integration and Continuous Deployment
-* Using a project management tool such as Github Projects
+* Setting up Continuous Integration and Continuous Deployment (optional)
+* Using Github Projects as a project management tool
 * Conducting Story Grooming meetings
 * Doing daily Stand Ups
 * Demoing your project to your Project Manager
@@ -32,10 +32,9 @@ In Agile processes, a sprint is a single cycle of development. The most common l
 
 Day 1:
 - Your group should split your team up to focus on each area of the project.
-  - Front-end team
-  - Back-end team
-  - Documentation/Planning team
-    - For teams of 5, one person will be on this. 
+  - Front-end team (2-3 people)
+  - Back-end team (2-3 people)
+  - Documentation/Planning team (1-2 people)
 
 - Each team will use a Miro board to brainstorm ideas
 - Delegate people to set up a GitHub organization, add other members, and set up the initial repos
@@ -53,7 +52,7 @@ Day 1:
 - End: Monday morning of Week 5
 
 - Deliverables:
-  - Frontend has Bootstrap in place, each wireframe is implemented in some amount, implements OAuth, can CRUD data with backend or is mocking backend responses for any incomplete endpoints
+  - Frontend has Bootstrap (or other CSS framework) in place, each wireframe is implemented in some amount, implements OAuth, can CRUD data with backend or is mocking backend responses for any incomplete endpoints
   - Rails back-end can CRUD resources based on front-end requests
   - Services successfully implement their respective API calls
 
@@ -68,15 +67,11 @@ Day 1:
 
 ## Project Check Ins
 
-In addition to the End of Sprint Demos, you will also have some project check ins
-
 * Check In 1
-    * Wednesday or Thursday of Week 4
     * During this meeting, you should be prepared to review the artifacts from your inception: MVP, wireframes, story board.
     * During this meeting, your team will draw out the architecture of your application
 
 * Check In 2
-    * Monday Week 5
     * During this check in, you will discuss with your project manager what the expectations are for your final demo on Friday
     * You can also use this check in as an opportunity to ask any questions and get help for the final few days of the project.
 
@@ -94,6 +89,7 @@ In addition to the End of Sprint Demos, you will also have some project check in
     * Use screenshots and screencasts to demonstrate functionality.
     * Your PR should be reviewed by at least one team member before it is merged.
     * Tag your Project Manager if you have questions. DM your Project Manager letting them know you have tagged them.
+    * Use a PR Template.
 
 
 ## Story Grooming

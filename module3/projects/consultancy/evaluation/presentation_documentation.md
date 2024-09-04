@@ -8,7 +8,7 @@ _[Back to Consultancy Home](../index)_
 _[Back to Evaluation Index](./index)_ 
 ## Presentation and Documentation
 
-__Choose either Live Demo or Video Presentation to Complete:__
+__Live Demo or Video Presentation to Complete: (presented during live eval)__
 
 - [ ] Team members who are not part of the demo/presentation, participate in Q&A
 

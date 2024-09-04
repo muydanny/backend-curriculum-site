@@ -90,9 +90,9 @@ Conflict and tension tends to arise in groups when there are differing expectati
 * **Objectives**
     * Decide how users will interact with your application
 * **Instructions (required)**
-    * Create a high level [user flow diagram](https://bashooka.com/inspiration/33-excellent-user-flow-examples-for-inspiration/) that lists the steps a user will take when interacting with your application.
+    * Create a high level user flow diagram that lists the steps a user will take when interacting with your application. (Can google for examples.)
     * Make a list of all of the pages required for your application along with what features will exist on each page.
-    * For each page, create a [wireframe](https://www.usability.gov/how-to-and-tools/methods/wireframing.html) by sketching out what that user will see when they navigate to that page. Include details such as header text, buttons, drop downs, forms with the specific fields, graphs etc.
+    * For each page, create a wireframe by sketching out what that user will see when they navigate to that page. Include details such as header text, buttons, drop downs, forms with the specific fields, graphs etc.
     * Do a few pages together as a group, then divide and conquer the remaining pages.
     * [Figma](https://www.figma.com/wireframe-tool/?utm_source=google&utm_medium=cpc&utm_campaign=17340391121&utm_term=free%20wireframe%20tools&utm_content=600487515776&gclid=CjwKCAjw5P2aBhAlEiwAAdY7dLtWlIVK0NWWHUXbjj8KMAaBN8P1lO16khOpesJ63utNI5b-cF1e2xoClmoQAvD_BwE) is a great tool for wireframing
 
@@ -101,7 +101,7 @@ Conflict and tension tends to arise in groups when there are differing expectati
 * **Objectives**
     * Document technical requirements for the development team
 * **Instructions (required)**
-    * Create a project board using Github Projects or Trello.
+    * Create a project board using Github Projects.
     * Translate each of the features that were written on sticky notes during the feature dump exercise into a [user story](https://www.atlassian.com/agile/project-management/user-stories) in your project management tool.
     * Every user story should be written from the perspective of the end user and should follow this format:  
         * `As a ___, when I visit ___, I want to ____ so that I can ____.`
